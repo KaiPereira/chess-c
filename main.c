@@ -1,53 +1,94 @@
 /*** dependencies ***/
+#include <math.h>
 #include <string.h>
+#include <ctype.h>
 #include <stdio.h>
 
 
 /*** definition ***/
 #define STARTING_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+#define BOARD_SIZE 64
+#define ROW 8
+#define COL 8
 
-
-/*** types ***/
-enum Type {
-	NONE = 1,
-	PAWN,
-	KNIGHT,
-	BISHOP,
-	ROOK,
-	QUEEN,
-	KING
+/*** Types ***/
+enum Color {
+	white, black, none
 };
 
-enum Color {
-	BLACK = 1,
-	WHITE
+enum Type {
+	empty,
+	pawn = 'p',
+	knight = 'n',
+	bishop = 'b',
+	rook = 'r',
+	queen = 'q',
+	king = 'k'
 };
 
 struct Piece {
-	enum Type type;
 	enum Color color;
+	enum Type type;
 };
 
 
-/*** initialisation ***/
-static void board_initialisation(char fen[]) {
-	struct Piece board[64];
+/** Functionality ***/
 
-	size_t row, i, column;
+void format(char fen[]) {
+	char pieces[BOARD_SIZE];
+	for (int s = 0; s < BOARD_SIZE; s++) pieces[s] = '.';
 
-	for (i = 0; i < strlen(fen); i++) {
-		if (fen[i] == '/') {
-			row++;
+	size_t fen_len = strlen(fen);
+	size_t i = 0;
+	int index = 0;
+
+	for (; (i < fen_len) && (fen[i] != ' '); i++) {
+		if (fen[i] == '/') continue;
+		
+		if (isdigit(fen[i])) index += (fen[i] - '0');
+
+		else {
+			pieces[index] = fen[i];
+			++index;
 		}
+	}
 
-		printf("%zu \n", row);	
-	}	
-}       
+	struct Piece board[ROW][COL];
+
+	for (i = 0; i < BOARD_SIZE; i++) {
+		char square = pieces[i];
+		
+		int row = i / ROW;
+		int col = i / COL;
+
+		struct Piece piece = board[row][col];
+
+		if (square == '.') {
+			piece.color = none;
+			piece.type = empty;
+		} else {
+			if (isupper(square)) piece.color = black;
+			else piece.color = white;
+
+			piece.color = square;
+		}
+	}
+
+	int row, columns;
+	for (row=0; row<8; row++)
+	{
+	    for(columns=0; columns<8; columns++)
+	    {
+		 printf("%d     ",  board[row][columns].type);
+	    }
+	    printf("\n");
+	}
+}
 
 
 /*** mains ***/
 int main() {
-	board_initialisation(STARTING_FEN);
+	format(STARTING_FEN);
 
 	return 1;
 }
