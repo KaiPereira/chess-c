@@ -17,7 +17,7 @@ enum Color {
 };
 
 enum Type {
-	empty,
+	empty = 'o',
 	pawn = 'p',
 	knight = 'n',
 	bishop = 'b',
@@ -59,9 +59,11 @@ void format(char fen[]) {
 		char square = pieces[i];
 		
 		int row = i / ROW;
-		int col = i / COL;
+		int col = i % COL;
 
 		struct Piece piece = board[row][col];
+		
+		// printf("%c", square);
 
 		if (square == '.') {
 			piece.color = none;
@@ -69,20 +71,22 @@ void format(char fen[]) {
 		} else {
 			if (isupper(square)) piece.color = black;
 			else piece.color = white;
-
-			piece.color = square;
+			
+			printf("%c", tolower(square));
+			piece.type = tolower(square);
 		}
 	}
 
-	int row, columns;
-	for (row=0; row<8; row++)
-	{
-	    for(columns=0; columns<8; columns++)
-	    {
-		 printf("%d     ",  board[row][columns].type);
-	    }
-	    printf("\n");
-	}
+	printf("\n");
+
+	printf("%c", board[0][0].type);
+	
+	/***	
+	for (size_t a = 0; a < ROW; a++) {
+		for (size_t b = 0; b < COL; b++) {
+			printf("%c", board[a][b].type);	
+		}
+	} ***/
 }
 
 
