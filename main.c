@@ -38,6 +38,11 @@ void set_piece(struct Piece board[ROW][COL], int row, int col, enum Color color,
 	board[row][col].type = type;
 }
 
+void move_piece(struct Piece from, struct Piece to) {
+	from.type = to.type;
+	from.color = to.color;	
+}	
+
 enum Type get_type_enum(char piece) {
 	switch(tolower(piece)) {
 		case 'p': return pawn;
@@ -97,9 +102,9 @@ void print_board(struct Piece board[COL][ROW]) {
 }
 
 
-/** Functionality ***/
+/** board ***/
 
-void format(char fen[]) {
+void set_board(char fen[], struct Piece board[ROW][COL]) {
 	char pieces[BOARD_SIZE];
 	for (int s = 0; s < BOARD_SIZE; s++) pieces[s] = '.';
 
@@ -118,8 +123,6 @@ void format(char fen[]) {
 		}
 	}
 
-	struct Piece board[ROW][COL];
-
 	for (i = 0; i < BOARD_SIZE; i++) {
 		char piece = pieces[i];
 		
@@ -135,14 +138,28 @@ void format(char fen[]) {
 			set_piece(board, row, col, color, type);
 		}
 	}
+}
 
-	print_board(board);
+
+/*** movegen ***/
+
+
+/*** game ***/
+
+
+/*** gameloop ***/
+void game(struct Piece board[ROW][COL]) {
+	printf("RUNNING GAME LOOP");
 }
 
 
 /*** mains ***/
 int main() {
-	format(STARTING_FEN);
+	struct Piece board[ROW][COL];
+	set_board(STARTING_FEN, board);
+	// game(board);
+
+	print_board(board);
 
 	return 1;
 }
