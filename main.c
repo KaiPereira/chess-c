@@ -38,9 +38,11 @@ void set_piece(struct Piece board[ROW][COL], int row, int col, enum Color color,
 	board[row][col].type = type;
 }
 
-void move_piece(struct Piece from, struct Piece to) {
-	from.type = to.type;
-	from.color = to.color;	
+void move_piece(struct Piece board[ROW][COL], int from_row, int from_col, int to_row, int to_col) {
+	board[to_row][to_col] = board[from_row][from_col];
+
+	board[from_row][from_col].type = empty;
+	board[from_row][from_col].color = none;
 }	
 
 enum Type get_type_enum(char piece) {
@@ -86,6 +88,8 @@ char get_color_char(enum Color color) {
 }
 
 void print_board(struct Piece board[COL][ROW]) {
+	printf("\n");
+
 	for (size_t r = 0; r < ROW; r++) {
 		for (size_t c = 0; c < COL; c++) {
 			struct Piece square = board[r][c];
@@ -103,7 +107,6 @@ void print_board(struct Piece board[COL][ROW]) {
 
 
 /** board ***/
-
 void set_board(char fen[], struct Piece board[ROW][COL]) {
 	char pieces[BOARD_SIZE];
 	for (int s = 0; s < BOARD_SIZE; s++) pieces[s] = '.';
@@ -142,6 +145,32 @@ void set_board(char fen[], struct Piece board[ROW][COL]) {
 
 
 /*** movegen ***/
+const char * movegen(struct Piece board[ROW][COL], int from_row, int from_col, int to_row, int to_col) {
+	enum Type type = board[from_row][from_col].type;
+
+	if (from_row == to_row && from_col == to_col) return "Cannot move piece to it's own spot";
+	
+	// I've decided to go for if statements because these are long statements and it looks cleaner	
+	if (type == pawn) {
+		return "pawn";
+	} else if (type == knight) {
+		return "knight";
+	} else if (type == bishop) {
+		return "bishop";
+	} else if (type == rook) {
+		return "rook";
+	} else if (type == queen) {
+		return "queen";
+	} else if (type == king) {
+		return "king";
+	} else if (type == empty) {
+		return "empty";
+	} else {
+		return "unknown";
+	}
+
+	return "none";
+}
 
 
 /*** game ***/
@@ -149,7 +178,9 @@ void set_board(char fen[], struct Piece board[ROW][COL]) {
 
 /*** gameloop ***/
 void game(struct Piece board[ROW][COL]) {
-	printf("RUNNING GAME LOOP");
+	const char* message = movegen(board, 0, 0, 4, 5);
+
+	printf("%s", message);
 }
 
 
@@ -157,7 +188,7 @@ void game(struct Piece board[ROW][COL]) {
 int main() {
 	struct Piece board[ROW][COL];
 	set_board(STARTING_FEN, board);
-	// game(board);
+	game(board);
 
 	print_board(board);
 
