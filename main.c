@@ -11,6 +11,7 @@
 #define ROW 8
 #define COL 8
 
+
 /*** Types ***/
 enum Color {
 	white, black, none
@@ -147,6 +148,11 @@ void set_board(char fen[], struct Piece board[ROW][COL]) {
 /*** movegen ***/
 const char * movegen(struct Piece board[ROW][COL], int from_row, int from_col, int to_row, int to_col) {
 	enum Type type = board[from_row][from_col].type;
+	enum Color color = board[from_row][from_col].color;
+
+	// work here
+	int pos_moves[];
+	
 
 	if (from_row == to_row && from_col == to_col) return "Cannot move piece to it's own spot";
 	
