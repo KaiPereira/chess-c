@@ -1,4 +1,5 @@
 /*** dependencies ***/
+#include <stdbool.h>
 #include <math.h>
 #include <string.h>
 #include <ctype.h>
@@ -146,47 +147,33 @@ void set_board(char fen[], struct Piece board[ROW][COL]) {
 
 
 /*** movegen ***/
-const char * movegen(struct Piece board[ROW][COL], int from_row, int from_col, int to_row, int to_col) {
-	enum Type type = board[from_row][from_col].type;
-	enum Color color = board[from_row][from_col].color;
+bool pawnRule(struct Piece board[ROW][COL], int y, int x, int pY, int pX) {
+	enum Color color = board[x][y].color;
 
-	// work here
-	int pos_moves[];
-	
+	bool on_start_file = (color == white && y == 6) ? true : (color == black && y == 1) ? true : false;
 
-	if (from_row == to_row && from_col == to_col) return "Cannot move piece to it's own spot";
-	
-	// I've decided to go for if statements because these are long statements and it looks cleaner	
-	if (type == pawn) {
-		return "pawn";
-	} else if (type == knight) {
-		return "knight";
-	} else if (type == bishop) {
-		return "bishop";
-	} else if (type == rook) {
-		return "rook";
-	} else if (type == queen) {
-		return "queen";
-	} else if (type == king) {
-		return "king";
-	} else if (type == empty) {
-		return "empty";
+	if ((pX == x + 1) || (pX == x - 1) && (pY == y + 1)) {
+		if (x + 1 == pX) return true;
+	} else if (pX == x) {
+		if ((on_start_file && (y + 1 == pY)) || (on_start_file && (y + 2 == pY))) return true;
 	} else {
-		return "unknown";
+		return false;
 	}
-
-	return "none";
 }
 
-
-/*** game ***/
+bool knightRule(struct Piece board[ROW][COL], int y, int x, int pY, int pX) {
+	if ((y - 1 == pY) && (x - 2 == pX) || (x + 2 == pX)) return true;
+	if ((y - 2 == pY) && (x - 1 == pX) || (x + 1 == pX)) return true;	
+}
 
 
 /*** gameloop ***/
 void game(struct Piece board[ROW][COL]) {
-	const char* message = movegen(board, 0, 0, 4, 5);
+	bool valid = pawnRule(board, 1, 0, 2, 0);
 
-	printf("%s", message);
+	printf("%c", get_type_char(board[1][0].type));
+
+	printf("%d", valid);
 }
 
 
