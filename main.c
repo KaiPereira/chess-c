@@ -107,6 +107,19 @@ void print_board(struct Piece board[COL][ROW]) {
 	}
 }
 
+int row_num(char x) {
+	switch(tolower(x)) {
+		case 'a': return 0;
+		case 'b': return 1;
+		case 'c': return 2;
+		case 'd': return 3;
+		case 'e': return 4;
+		case 'f': return 5;
+		case 'g': return 6;
+		case 'h': return 7;
+	}
+}
+
 
 /** board ***/
 void set_board(char fen[], struct Piece board[ROW][COL]) {
@@ -237,7 +250,35 @@ bool kingRule(struct Piece board[ROW][COL], int y, int x, int pY, int pX) {
 
 /*** gameloop ***/
 void game(struct Piece board[ROW][COL]) {
+	int x;
+	int y;
+	int pX;
+	int pY;
+
+	int i;
+
 	while (true) { //checkmate
+		printf("From: ");
+
+		i = 0;
+		char cx = getchar();
+		while (cx != '\n') {
+			i == 0 ? x == row_num(cx) : y == cx;
+			cx = getchar();
+		}
+		
+
+		printf("To: ");
+
+		i = 0;
+		char cy = getchar();
+		while (cy != '\n') {
+			i == 0 ? pX == row_num(cy) : pY == cy;
+			cy = getchar();
+		}
+
+		printf("x %d, y %d, px %d, py %d", x, y, pX, pY);
+
 		bool valid = pawnRule(board, 1, 0, 2, 0);
 
 		printf("%c", get_type_char(board[1][0].type));
