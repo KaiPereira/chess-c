@@ -237,11 +237,13 @@ bool kingRule(struct Piece board[ROW][COL], int y, int x, int pY, int pX) {
 
 /*** gameloop ***/
 void game(struct Piece board[ROW][COL]) {
-	bool valid = pawnRule(board, 1, 0, 2, 0);
+	while (true) { //checkmate
+		bool valid = pawnRule(board, 1, 0, 2, 0);
 
-	printf("%c", get_type_char(board[1][0].type));
+		printf("%c", get_type_char(board[1][0].type));
 
-	printf("%d", valid);
+		printf("%d", valid);
+	}
 }
 
 
