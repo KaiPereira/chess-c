@@ -147,23 +147,91 @@ void set_board(char fen[], struct Piece board[ROW][COL]) {
 
 
 /*** movegen ***/
+
+/*** legality thanks to https://github.com/JDSherbert for some movegen logic ***/
 bool pawnRule(struct Piece board[ROW][COL], int y, int x, int pY, int pX) {
 	enum Color color = board[x][y].color;
+	enum Type type = board[x][y].type;
 
-	bool on_start_file = (color == white && y == 6) ? true : (color == black && y == 1) ? true : false;
-
-	if ((pX == x + 1) || (pX == x - 1) && (pY == y + 1)) {
-		if (x + 1 == pX) return true;
-	} else if (pX == x) {
-		if ((on_start_file && (y + 1 == pY)) || (on_start_file && (y + 2 == pY))) return true;
+	if (color == white) {
+                if (x == 6 && pX == 4 && y == pY && type == empty) return true;
+                if (x - 1 == pX && y == pY && type == empty) return true;
+                if (x - 1 == pX && (y - 1 == pY || y + 1 == pY) && color == black) return true;
 	} else {
-		return false;
-	}
+                if (x == 1 && pX == 3 && y == pY && type == empty) return true;
+                if (x + 1 == pX && y == pY && type == empty) return true;
+                if (x + 1 == pX && (y - 1 == pY || y + 1 == pY) && color == white) return true;
+	}	
 }
 
 bool knightRule(struct Piece board[ROW][COL], int y, int x, int pY, int pX) {
-	if ((y - 1 == pY) && (x - 2 == pX) || (x + 2 == pX)) return true;
-	if ((y - 2 == pY) && (x - 1 == pX) || (x + 1 == pX)) return true;	
+	if ((x - pX == 2) && (y - pY == 1) || (x - pX == 1) && (x - pY == 2)) return true;
+	else return false;
+}
+
+bool bishopRule(struct Piece board[ROW][COL], int y, int x, int pY, int pX) {
+	if ((y - pY) == (x - pX)) {
+		int dx = (x > pX) ? 1 : -1;
+		int dy = (y > pY) ? 1 : -1;
+
+		int loop_x = dx + x;
+		int loop_y = dy + y;
+
+		while (loop_x != pX) {
+			if (board[loop_x][loop_y].type != empty) return false;
+
+			loop_x += dx;
+			loop_y += dy;
+		}
+		
+		return true;
+
+	} else return false;
+}
+
+bool rookRule(struct Piece board[ROW][COL], int y, int x, int pY, int pX) {
+	if ((y == pY) || (x == pX)) {
+		int dx = (x == pX) ? 0 : ((pX > x) ? 1 : -1);
+                int dy = (y == pY) ? 0 : ((pY > y) ? 1 : -1);
+
+                int loop_x  = x + dx;
+                int loop_y  = y + dy;
+
+                while (loop_x != pX || loop_y != pY) {
+                    if (board[x][y].type != empty) return false;
+
+                    loop_x += dx;
+                    loop_y += dy;
+                }
+
+                return true;
+
+	} else return false;
+}
+
+bool queenRule(struct Piece board[ROW][COL], int y, int x, int pY, int pX) {
+	if ((y == pY) || (x == pX) || (y - pY) == (x - pX)) {
+		int dx = (x == pX) ? 0 : ((pX > x) ? 1 : -1);
+                int dy = (y == pY) ? 0 : ((pY > y) ? 1 : -1);
+
+                int loop_x = x + dx;
+                int loop_y = y + dy;
+
+                while (x != pX || y != pY) {
+                    if (board[x][y].type != empty) return false;
+
+                    loop_x += dx;
+                    loop_y += dy;
+                }
+
+                return true;
+
+	} else return false;
+}
+
+bool kingRule(struct Piece board[ROW][COL], int y, int x, int pY, int pX) {
+	if ((x - pX <= 1) && (y - pY <= 1)) return true;
+	else return false;
 }
 
 
