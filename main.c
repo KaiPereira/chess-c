@@ -176,7 +176,7 @@ bool check_pos(const char *input, int *row, int *col) {
 /*** movegen ***/
 
 /*** legality thanks to https://github.com/JDSherbert for some movegen logic ***/
-bool pawn_rule(struct Piece board[ROW][COL], int y, int x, int pY, int pX) {
+bool pawn_rule(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
 	enum Color color = board[x][y].color;
 	enum Type type = board[x][y].type;
 
@@ -189,14 +189,16 @@ bool pawn_rule(struct Piece board[ROW][COL], int y, int x, int pY, int pX) {
                 if (x + 1 == pX && y == pY && type == empty) return true;
                 if (x + 1 == pX && (y - 1 == pY || y + 1 == pY) && color == white) return true;
 	}	
+
+	return false;
 }
 
-bool knight_rule(struct Piece board[ROW][COL], int y, int x, int pY, int pX) {
+bool knight_rule(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
 	if ((x - pX == 2) && (y - pY == 1) || (x - pX == 1) && (x - pY == 2)) return true;
 	else return false;
 }
 
-bool bishop_rule(struct Piece board[ROW][COL], int y, int x, int pY, int pX) {
+bool bishop_rule(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
 	if ((y - pY) == (x - pX)) {
 		int dx = (x > pX) ? 1 : -1;
 		int dy = (y > pY) ? 1 : -1;
@@ -216,7 +218,7 @@ bool bishop_rule(struct Piece board[ROW][COL], int y, int x, int pY, int pX) {
 	} else return false;
 }
 
-bool rook_rule(struct Piece board[ROW][COL], int y, int x, int pY, int pX) {
+bool rook_rule(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
 	if ((y == pY) || (x == pX)) {
 		int dx = (x == pX) ? 0 : ((pX > x) ? 1 : -1);
                 int dy = (y == pY) ? 0 : ((pY > y) ? 1 : -1);
@@ -236,7 +238,7 @@ bool rook_rule(struct Piece board[ROW][COL], int y, int x, int pY, int pX) {
 	} else return false;
 }
 
-bool queen_rule(struct Piece board[ROW][COL], int y, int x, int pY, int pX) {
+bool queen_rule(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
 	if ((y == pY) || (x == pX) || (y - pY) == (x - pX)) {
 		int dx = (x == pX) ? 0 : ((pX > x) ? 1 : -1);
                 int dy = (y == pY) ? 0 : ((pY > y) ? 1 : -1);
@@ -256,22 +258,22 @@ bool queen_rule(struct Piece board[ROW][COL], int y, int x, int pY, int pX) {
 	} else return false;
 }
 
-bool king_rule(struct Piece board[ROW][COL], int y, int x, int pY, int pX) {
+bool king_rule(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
 	if ((x - pX <= 1) && (y - pY <= 1)) return true;
 	else return false;
 }
 
-bool make_move(struct Piece board[ROW][COL], int y, int x, int pY, int pX) {
+bool make_move(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
 	enum Type type = board[x][y].type;
 
 	switch(type){
-		case pawn: return pawn_rule(board, y, x, pY, pX);
-		case knight: return knight_rule(board, y, x, pY, pX);
-		case bishop: return bishop_rule(board, y, x, pY, pX);
-		case rook: return rook_rule(board, y, x, pY, pX);
-		case queen: return queen_rule(board, y, x, pY, pX);
-		case king: return king_rule(board, y, x, pY, pX);
-		case empty: printf("Cannot move an empty square"); return false;
+		case pawn: return pawn_rule(board, x, y, pX, pY);
+		case knight: return knight_rule(board, x, y, pX, pY);
+		case bishop: return bishop_rule(board, x, y, pX, pY);
+		case rook: return rook_rule(board, x, y, pX, pY);
+		case queen: return queen_rule(board, x, y, pX, pY);
+		case king: return king_rule(board, x, y, pX, pY);
+		case empty: printf("Cannot move an empty square \n"); return false;
 		default: return false;
 	}
 }
@@ -300,14 +302,19 @@ void game(struct Piece board[ROW][COL]) {
 		printf("Enter target position (e3, b5, etc): ");
 		scanf("%2s", to);
 
+		printf("\e[1;1H\e[2J");
+
 		if (!check_pos(from, &x, &y) || !check_pos(to, &pX, &pY)) {
 			printf("Invalid coordinates \n");
 			continue;
 		}
 
-		printf("\e[1;1H\e[2J");
+		if (make_move(board, x, y, pX, pY)) {
+			move_piece(board, x, y, pX, pY);
+		} else {
+			printf("Unable to move that piece there");
+		}
 
-		make_move(board, y, x, pY, pX);
 		printf("\n");
 	}
 }
