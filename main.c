@@ -1,4 +1,5 @@
 /*** dependencies ***/
+#include <unistd.h>
 #include <stdbool.h>
 #include <math.h>
 #include <string.h>
@@ -105,6 +106,8 @@ void print_board(struct Piece board[COL][ROW]) {
 		}
 		printf("\n");
 	}
+
+	printf("\n");
 }
 
 int row_num(char x) {
@@ -158,11 +161,22 @@ void set_board(char fen[], struct Piece board[ROW][COL]) {
 	}
 }
 
+bool check_pos(const char *input, int *row, int *col) {
+	if (input[0] < 'a' || input[0] > 'h' || input[1] < '1' || input[1] > '8') return false;
+
+	*col = input[0] - 'a';
+	*row = 8 - (input[1] - '0');
+
+	return true;
+}
+
+
+
 
 /*** movegen ***/
 
 /*** legality thanks to https://github.com/JDSherbert for some movegen logic ***/
-bool pawnRule(struct Piece board[ROW][COL], int y, int x, int pY, int pX) {
+bool pawn_rule(struct Piece board[ROW][COL], int y, int x, int pY, int pX) {
 	enum Color color = board[x][y].color;
 	enum Type type = board[x][y].type;
 
@@ -177,12 +191,12 @@ bool pawnRule(struct Piece board[ROW][COL], int y, int x, int pY, int pX) {
 	}	
 }
 
-bool knightRule(struct Piece board[ROW][COL], int y, int x, int pY, int pX) {
+bool knight_rule(struct Piece board[ROW][COL], int y, int x, int pY, int pX) {
 	if ((x - pX == 2) && (y - pY == 1) || (x - pX == 1) && (x - pY == 2)) return true;
 	else return false;
 }
 
-bool bishopRule(struct Piece board[ROW][COL], int y, int x, int pY, int pX) {
+bool bishop_rule(struct Piece board[ROW][COL], int y, int x, int pY, int pX) {
 	if ((y - pY) == (x - pX)) {
 		int dx = (x > pX) ? 1 : -1;
 		int dy = (y > pY) ? 1 : -1;
@@ -202,7 +216,7 @@ bool bishopRule(struct Piece board[ROW][COL], int y, int x, int pY, int pX) {
 	} else return false;
 }
 
-bool rookRule(struct Piece board[ROW][COL], int y, int x, int pY, int pX) {
+bool rook_rule(struct Piece board[ROW][COL], int y, int x, int pY, int pX) {
 	if ((y == pY) || (x == pX)) {
 		int dx = (x == pX) ? 0 : ((pX > x) ? 1 : -1);
                 int dy = (y == pY) ? 0 : ((pY > y) ? 1 : -1);
@@ -222,7 +236,7 @@ bool rookRule(struct Piece board[ROW][COL], int y, int x, int pY, int pX) {
 	} else return false;
 }
 
-bool queenRule(struct Piece board[ROW][COL], int y, int x, int pY, int pX) {
+bool queen_rule(struct Piece board[ROW][COL], int y, int x, int pY, int pX) {
 	if ((y == pY) || (x == pX) || (y - pY) == (x - pX)) {
 		int dx = (x == pX) ? 0 : ((pX > x) ? 1 : -1);
                 int dy = (y == pY) ? 0 : ((pY > y) ? 1 : -1);
@@ -242,9 +256,24 @@ bool queenRule(struct Piece board[ROW][COL], int y, int x, int pY, int pX) {
 	} else return false;
 }
 
-bool kingRule(struct Piece board[ROW][COL], int y, int x, int pY, int pX) {
+bool king_rule(struct Piece board[ROW][COL], int y, int x, int pY, int pX) {
 	if ((x - pX <= 1) && (y - pY <= 1)) return true;
 	else return false;
+}
+
+bool make_move(struct Piece board[ROW][COL], int y, int x, int pY, int pX) {
+	enum Type type = board[x][y].type;
+
+	switch(type){
+		case pawn: return pawn_rule(board, y, x, pY, pX);
+		case knight: return knight_rule(board, y, x, pY, pX);
+		case bishop: return bishop_rule(board, y, x, pY, pX);
+		case rook: return rook_rule(board, y, x, pY, pX);
+		case queen: return queen_rule(board, y, x, pY, pX);
+		case king: return king_rule(board, y, x, pY, pX);
+		case empty: printf("Cannot move an empty square"); return false;
+		default: return false;
+	}
 }
 
 
@@ -256,34 +285,30 @@ void game(struct Piece board[ROW][COL]) {
 	int pY;
 
 	int i;
+	
+	printf("\e[1;1H\e[2J");
 
 	while (true) { //checkmate
-		printf("From: ");
+		print_board(board);
 
-		i = 0;
-		char cx = getchar();
-		while (cx != '\n') {
-			i == 0 ? x == row_num(cx) : y == cx;
-			cx = getchar();
-		}
-		
+		char from[3], to[3];
+		int y, x, pY, pX;
 
-		printf("To: ");
+		printf("Enter current piece position (e2, b4, etc): ");
+		scanf("%2s", from);
 
-		i = 0;
-		char cy = getchar();
-		while (cy != '\n') {
-			i == 0 ? pX == row_num(cy) : pY == cy;
-			cy = getchar();
+		printf("Enter target position (e3, b5, etc): ");
+		scanf("%2s", to);
+
+		if (!check_pos(from, &x, &y) || !check_pos(to, &pX, &pY)) {
+			printf("Invalid coordinates \n");
+			continue;
 		}
 
-		printf("x %d, y %d, px %d, py %d", x, y, pX, pY);
+		printf("\e[1;1H\e[2J");
 
-		bool valid = pawnRule(board, 1, 0, 2, 0);
-
-		printf("%c", get_type_char(board[1][0].type));
-
-		printf("%d", valid);
+		make_move(board, y, x, pY, pX);
+		printf("\n");
 	}
 }
 
@@ -293,8 +318,4 @@ int main() {
 	struct Piece board[ROW][COL];
 	set_board(STARTING_FEN, board);
 	game(board);
-
-	print_board(board);
-
-	return 1;
 }
