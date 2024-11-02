@@ -178,7 +178,7 @@ bool check_pos(const char *input, int *row, int *col) {
 /*** legality thanks to https://github.com/JDSherbert for some movegen logic ***/
 bool pawn_rule(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
 	enum Color color = board[x][y].color;
-	enum Type type = board[x][y].type;
+	enum Type type = board[pX][pY].type;
 
 	if (color == white) {
                 if (x == 6 && pX == 4 && y == pY && type == empty) return true;
