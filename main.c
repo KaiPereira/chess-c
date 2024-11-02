@@ -8,7 +8,7 @@
 
 
 /*** definition ***/
-#define STARTING_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+#define STARTING_FEN "rnb1kbnr/pppppppp/8/8/8/2q5/8/4K3 w kq - 0 1"
 #define BOARD_SIZE 64
 #define ROW 8
 #define COL 8
@@ -170,7 +170,7 @@ bool check_pos(const char *input, int *row, int *col) {
 	return true;
 }
 
-bool find_piece(struct Piece board[ROW][COL], enum Color color, int *x, int *y) {
+void find_piece(struct Piece board[ROW][COL], enum Color color, int *x, int *y) {
 	int r, c = 0;
 
 	for (; r < ROW; r++) {
@@ -288,6 +288,16 @@ bool king_attacked(struct Piece board[ROW][COL], enum Color color) {
 			enum Type type = board[r][c].type;
 
 			if (type == empty) continue;
+
+			switch(type) {
+				case pawn: return pawn_rule(board, r, c, x, y);
+				case knight: return knight_rule(board, r, c, x, y);
+				case bishop: return bishop_rule(board, r, c, x, y);
+				case rook: return rook_rule(board, r, c, x, y);
+				case queen: return queen_rule(board, r, c, x, y);
+				case king: return king_rule(board, r, c, x, y);
+				default: return false;
+			}			
 		}
 	}
 }
@@ -297,9 +307,10 @@ bool king_attacked(struct Piece board[ROW][COL], enum Color color) {
 bool make_move(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
 	enum Type type = board[x][y].type;
 
-	king_attacked(board, white);
+	king_attacked(board, white) && printf("KING ATTACKED");
+	printf("KING STATEMENT RAN");
 
-	switch(type){
+	switch(type) {
 		case pawn: return pawn_rule(board, x, y, pX, pY);
 		case knight: return knight_rule(board, x, y, pX, pY);
 		case bishop: return bishop_rule(board, x, y, pX, pY);
