@@ -170,12 +170,23 @@ bool check_pos(const char *input, int *row, int *col) {
 	return true;
 }
 
+bool find_piece(struct Piece board[ROW][COL], enum Color color, int *x, int *y) {
+	int r, c = 0;
 
+	for (; r < ROW; r++) {
+		for (; c < COL; c++) {
+			if (board[r][c].type == king && board[r][c].color == color) {
+				*x = r;
+				*y = c;
+			}
+		}
+	}
+}
 
 
 /*** movegen ***/
 
-/*** legality thanks to https://github.com/JDSherbert for some movegen logic ***/
+/*** pseudolegality thanks to https://github.com/JDSherbert for some movegen logic ***/
 bool pawn_rule(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
 	enum Color color = board[x][y].color;
 	enum Type type = board[pX][pY].type;
@@ -263,8 +274,30 @@ bool king_rule(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
 	else return false;
 }
 
+
+/*** chess/pins ***/
+bool king_attacked(struct Piece board[ROW][COL], enum Color color) {
+	int x, y;
+
+	find_piece(board, color, &x, &y);
+
+	int r, c = 0;
+
+	for (; r < ROW; r++) {
+		for (; c < COL; c++) {
+			enum Type type = board[r][c].type;
+
+			if (type == empty) continue;
+		}
+	}
+}
+
+
+/*** final move gen ***/
 bool make_move(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
 	enum Type type = board[x][y].type;
+
+	king_attacked(board, white);
 
 	switch(type){
 		case pawn: return pawn_rule(board, x, y, pX, pY);
@@ -290,7 +323,7 @@ void game(struct Piece board[ROW][COL]) {
 	
 	printf("\e[1;1H\e[2J");
 
-	while (true) { //checkmate
+	while (true) {
 		print_board(board);
 
 		char from[3], to[3];
