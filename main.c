@@ -35,6 +35,11 @@ struct Piece {
 };
 
 
+/*** General Helper Functions ***/
+void clear_scr() {
+	//printf("\e[1;1H\e[2J");
+}
+
 /*** Helper Functions ***/
 void set_piece(struct Piece board[ROW][COL], int row, int col, enum Color color, enum Type type) {
 	board[row][col].color = color;
@@ -188,21 +193,33 @@ void find_piece(struct Piece board[ROW][COL], enum Color color, int *x, int *y) 
 
 /*** pseudolegality thanks to https://github.com/JDSherbert for some movegen logic ***/
 bool pawn_rule(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
-	enum Color color = board[x][y].color;
-	enum Type type = board[pX][pY].type;
+    // Bounds check for the board positions
+    if (x < 0 || x >= ROW || y < 0 || y >= COL || pX < 0 || pX >= ROW || pY < 0 || pY >= COL) {
+        return false;
+    }
 
-	if (color == white) {
-                if (x == 6 && pX == 4 && y == pY && type == empty) return true;
-                if (x - 1 == pX && y == pY && type == empty) return true;
-                if (x - 1 == pX && (y - 1 == pY || y + 1 == pY) && color == black) return true;
-	} else {
-                if (x == 1 && pX == 3 && y == pY && type == empty) return true;
-                if (x + 1 == pX && y == pY && type == empty) return true;
-                if (x + 1 == pX && (y - 1 == pY || y + 1 == pY) && color == white) return true;
-	}	
+    enum Color color = board[x][y].color;
+    enum Type type = board[pX][pY].type;
 
-	return false;
+    if (color == white) {
+        // White pawn moving two steps forward from initial position
+        if (x == 6 && pX == 4 && y == pY && type == empty) return true;
+        // White pawn moving one step forward
+        if (x - 1 == pX && y == pY && type == empty) return true;
+        // White pawn capturing diagonally
+        if (x - 1 == pX && (y - 1 == pY || y + 1 == pY) && board[pX][pY].color == black) return true;
+    } else if (color == black) {
+        // Black pawn moving two steps forward from initial position
+        if (x == 1 && pX == 3 && y == pY && type == empty) return true;
+        // Black pawn moving one step forward
+        if (x + 1 == pX && y == pY && type == empty) return true;
+        // Black pawn capturing diagonally
+        if (x + 1 == pX && (y - 1 == pY || y + 1 == pY) && board[pX][pY].color == white) return true;
+    }
+
+    return false;
 }
+
 
 bool knight_rule(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
 	if ((x - pX == 2) && (y - pY == 1) || (x - pX == 1) && (x - pY == 2)) return true;
@@ -269,46 +286,48 @@ bool queen_rule(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
 	} else return false;
 }
 
-bool king_rule(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
+bool king_rule(struct Piece board[ROW][COL], int x, int y, int pX, int pY) { 
 	if ((x - pX <= 1) && (y - pY <= 1)) return true;
 	else return false;
 }
 
 
 /*** chess/pins ***/
-bool king_attacked(struct Piece board[ROW][COL], enum Color color) {
+bool king_attacked(struct Piece board[ROW][COL], enum Color king_color) {
 	int x, y;
 
-	find_piece(board, color, &x, &y);
+	find_piece(board, king_color, &x, &y);
 
-	int r, c = 0;
-
-	for (; r < ROW; r++) {
-		for (; c < COL; c++) {
+	for (int r = 0; r < ROW; r++) {
+		for (int c = 0; c < COL; c++) {
 			enum Type type = board[r][c].type;
+			enum Color color = board[r][c].color;
 
 			if (type == empty) continue;
+			if (color == king_color) continue;
 
+			bool isAttacked;
+			
 			switch(type) {
-				case pawn: return pawn_rule(board, r, c, x, y);
-				case knight: return knight_rule(board, r, c, x, y);
-				case bishop: return bishop_rule(board, r, c, x, y);
-				case rook: return rook_rule(board, r, c, x, y);
-				case queen: return queen_rule(board, r, c, x, y);
-				case king: return king_rule(board, r, c, x, y);
-				default: return false;
-			}			
+				case pawn: isAttacked = pawn_rule(board, r, c, x, y);
+				case knight: isAttacked = knight_rule(board, r, c, x, y);
+				case bishop: isAttacked = bishop_rule(board, r, c, x, y);
+				case rook: isAttacked = rook_rule(board, r, c, x, y);
+				case queen: isAttacked = queen_rule(board, r, c, x, y);
+				case king: isAttacked = king_rule(board, r, c, x, y);
+			}
+
+			if (isAttacked) return true;
 		}
 	}
+
+	return false;
 }
 
 
 /*** final move gen ***/
-bool make_move(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
+bool check_move(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
 	enum Type type = board[x][y].type;
-
-	king_attacked(board, white) && printf("KING ATTACKED");
-	printf("KING STATEMENT RAN");
 
 	switch(type) {
 		case pawn: return pawn_rule(board, x, y, pX, pY);
@@ -322,7 +341,6 @@ bool make_move(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
 	}
 }
 
-
 /*** gameloop ***/
 void game(struct Piece board[ROW][COL]) {
 	int x;
@@ -332,7 +350,7 @@ void game(struct Piece board[ROW][COL]) {
 
 	int i;
 	
-	printf("\e[1;1H\e[2J");
+	clear_scr();
 
 	while (true) {
 		print_board(board);
@@ -346,15 +364,26 @@ void game(struct Piece board[ROW][COL]) {
 		printf("Enter target position (e3, b5, etc): ");
 		scanf("%2s", to);
 
-		printf("\e[1;1H\e[2J");
+		clear_scr();
+
+		// Make the move and then check if that leaves the king in check
 
 		if (!check_pos(from, &x, &y) || !check_pos(to, &pX, &pY)) {
 			printf("Invalid coordinates \n");
 			continue;
 		}
 
-		if (make_move(board, x, y, pX, pY)) {
+		if (check_move(board, x, y, pX, pY)) {
+			struct Piece temp_board[ROW][COL];
+
+			memcpy(temp_board, board, sizeof(struct Piece) * ROW * COL);
+
 			move_piece(board, x, y, pX, pY);
+			
+			if (king_attacked(board, white)) {
+				printf("Your king is in check");
+				memcpy(board, temp_board, sizeof(struct Piece) * ROW * COL);
+			}
 		} else {
 			printf("Unable to move that piece there");
 		}
@@ -369,4 +398,6 @@ int main() {
 	struct Piece board[ROW][COL];
 	set_board(STARTING_FEN, board);
 	game(board);
+
+	return 0;
 }
