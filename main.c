@@ -193,31 +193,24 @@ void find_piece(struct Piece board[ROW][COL], enum Color color, int *x, int *y) 
 
 /*** pseudolegality thanks to https://github.com/JDSherbert for some movegen logic ***/
 bool pawn_rule(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
-    // Bounds check for the board positions
-    if (x < 0 || x >= ROW || y < 0 || y >= COL || pX < 0 || pX >= ROW || pY < 0 || pY >= COL) {
-        return false;
-    }
+   	if (x < 0 || x >= ROW || y < 0 || y >= COL || pX < 0 || pX >= ROW || pY < 0 || pY >= COL) {
+        	return false;
+   	}
 
-    enum Color color = board[x][y].color;
-    enum Type type = board[pX][pY].type;
+   	enum Color color = board[x][y].color;
+	enum Type type = board[pX][pY].type;
 
-    if (color == white) {
-        // White pawn moving two steps forward from initial position
-        if (x == 6 && pX == 4 && y == pY && type == empty) return true;
-        // White pawn moving one step forward
-        if (x - 1 == pX && y == pY && type == empty) return true;
-        // White pawn capturing diagonally
-        if (x - 1 == pX && (y - 1 == pY || y + 1 == pY) && board[pX][pY].color == black) return true;
-    } else if (color == black) {
-        // Black pawn moving two steps forward from initial position
-        if (x == 1 && pX == 3 && y == pY && type == empty) return true;
-        // Black pawn moving one step forward
-        if (x + 1 == pX && y == pY && type == empty) return true;
-        // Black pawn capturing diagonally
-        if (x + 1 == pX && (y - 1 == pY || y + 1 == pY) && board[pX][pY].color == white) return true;
-    }
+   	if (color == white) {
+        	if (x == 6 && pX == 4 && y == pY && type == empty) return true;
+        	if (x - 1 == pX && y == pY && type == empty) return true;
+        	if (x - 1 == pX && (y - 1 == pY || y + 1 == pY) && board[pX][pY].color == black) return true;
+    	} else if (color == black) {
+        	if (x == 1 && pX == 3 && y == pY && type == empty) return true;
+        	if (x + 1 == pX && y == pY && type == empty) return true;
+        	if (x + 1 == pX && (y - 1 == pY || y + 1 == pY) && board[pX][pY].color == white) return true;
+    	}
 
-    return false;
+	return false;
 }
 
 
@@ -384,6 +377,7 @@ void game(struct Piece board[ROW][COL]) {
 				printf("Your king is in check");
 				memcpy(board, temp_board, sizeof(struct Piece) * ROW * COL);
 			}
+
 		} else {
 			printf("Unable to move that piece there");
 		}
