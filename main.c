@@ -8,7 +8,7 @@
 
 
 /*** definition ***/
-#define STARTING_FEN "rnb1kbnr/pppppppp/8/8/8/2q5/8/4K3 w kq - 0 1"
+#define STARTING_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 #define BOARD_SIZE 64
 #define ROW 8
 #define COL 8
@@ -215,7 +215,7 @@ bool pawn_rule(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
 
 
 bool knight_rule(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
-	if ((x - pX == 2) && (y - pY == 1) || (x - pX == 1) && (x - pY == 2)) return true;
+	if (((x - pX) == 2) && ((y - pY) == 1) || ((x - pX) == 1) && ((x - pY) == 2)) return true;
 	else return false;
 }
 
@@ -287,6 +287,7 @@ bool king_rule(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
 
 /*** chess/pins ***/
 bool king_attacked(struct Piece board[ROW][COL], enum Color king_color) {
+	
 	int x, y;
 
 	find_piece(board, king_color, &x, &y);
@@ -294,20 +295,19 @@ bool king_attacked(struct Piece board[ROW][COL], enum Color king_color) {
 	for (int r = 0; r < ROW; r++) {
 		for (int c = 0; c < COL; c++) {
 			enum Type type = board[r][c].type;
-			enum Color color = board[r][c].color;
+			char color = board[r][c].color;
+
+			bool isAttacked = false;
 
 			if (type == empty) continue;
 			if (color == king_color) continue;
 
-			bool isAttacked;
-			
 			switch(type) {
 				case pawn: isAttacked = pawn_rule(board, r, c, x, y);
 				case knight: isAttacked = knight_rule(board, r, c, x, y);
 				case bishop: isAttacked = bishop_rule(board, r, c, x, y);
 				case rook: isAttacked = rook_rule(board, r, c, x, y);
 				case queen: isAttacked = queen_rule(board, r, c, x, y);
-				case king: isAttacked = king_rule(board, r, c, x, y);
 			}
 
 			if (isAttacked) return true;
