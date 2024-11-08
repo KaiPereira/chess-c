@@ -1,4 +1,5 @@
 /*** dependencies ***/
+#include <stdlib.h>
 #include <unistd.h>
 #include <stdbool.h>
 #include <math.h>
@@ -37,7 +38,7 @@ struct Piece {
 
 /*** General Helper Functions ***/
 void clear_scr() {
-	//printf("\e[1;1H\e[2J");
+	printf("\e[1;1H\e[2J");
 }
 
 /*** Helper Functions ***/
@@ -76,7 +77,6 @@ char get_type_char(enum Type type) {
 		case queen: piece = 'q'; break;
 		case king: piece = 'k'; break;
 		case empty: piece = '.'; break;
-		default: piece = '?';
 	}
 
 	return piece;
@@ -188,6 +188,14 @@ void find_piece(struct Piece board[ROW][COL], enum Color color, int *x, int *y) 
 	}
 }
 
+enum Color reverse_color(enum Color color) {
+	if (color == white) {
+		return black;
+	} else if (color == black) {
+		return white;
+	}
+}
+
 
 /*** movegen ***/
 
@@ -215,7 +223,8 @@ bool pawn_rule(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
 
 
 bool knight_rule(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
-	if (((x - pX) == 2) && ((y - pY) == 1) || ((x - pX) == 1) && ((x - pY) == 2)) return true;
+	if ((abs(x - pX) == 2) && (abs(y - pY) == 1) || (abs(x - pX) == 1) && (abs(x - pY) == 2)) return true;
+
 	else return false;
 }
 
@@ -341,6 +350,8 @@ void game(struct Piece board[ROW][COL]) {
 	int pX;
 	int pY;
 
+	enum Color color_to_move = white;
+
 	int i;
 	
 	clear_scr();
@@ -360,11 +371,17 @@ void game(struct Piece board[ROW][COL]) {
 		clear_scr();
 
 		// Make the move and then check if that leaves the king in check
-
 		if (!check_pos(from, &x, &y) || !check_pos(to, &pX, &pY)) {
 			printf("Invalid coordinates \n");
 			continue;
 		}
+
+		if (board[x][y].color != color_to_move) {
+			printf("Wrong color to move \n");
+			continue;
+		}
+
+		printf("%c, x%d, y%d, pX%d, pY%d \n", get_type_char(board[x][y].type), x, y, pX, pY);
 
 		if (check_move(board, x, y, pX, pY)) {
 			struct Piece temp_board[ROW][COL];
@@ -373,11 +390,12 @@ void game(struct Piece board[ROW][COL]) {
 
 			move_piece(board, x, y, pX, pY);
 			
-			if (king_attacked(board, white)) {
-				printf("Your king is in check");
+			if (king_attacked(board, color_to_move)) {
+				printf("Your king is in check \n");
 				memcpy(board, temp_board, sizeof(struct Piece) * ROW * COL);
 			}
 
+			color_to_move = reverse_color(color_to_move);
 		} else {
 			printf("Unable to move that piece there");
 		}
