@@ -365,16 +365,24 @@ void game(struct Piece board[ROW][COL]) {
 		printf("Enter current piece position (e2, b4, etc): ");
 		scanf("%2s", from);
 
+		// Make the move and then check if that leaves the king in check
+		if (!check_pos(from, &x, &y)) {
+			printf("Invalid coordinates \n");
+			clear_scr();
+			continue;
+		}
+
 		printf("Enter target position (e3, b5, etc): ");
 		scanf("%2s", to);
 
-		clear_scr();
-
 		// Make the move and then check if that leaves the king in check
-		if (!check_pos(from, &x, &y) || !check_pos(to, &pX, &pY)) {
+		if (!check_pos(to, &pX, &pY)) {
 			printf("Invalid coordinates \n");
 			continue;
 		}
+
+		clear_scr();
+
 
 		if (board[x][y].color != color_to_move) {
 			printf("Wrong color to move \n");
