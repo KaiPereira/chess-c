@@ -1,4 +1,6 @@
 /*** dependencies ***/
+#include <locale.h>
+#include <wchar.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdbool.h>
@@ -20,7 +22,7 @@ enum Color {
 	white, black, none
 };
 
-enum Type {
+enum Type { 
 	empty,
 	pawn,
 	knight,
@@ -67,48 +69,75 @@ enum Type get_type_enum(char piece) {
 }
 
 char get_type_char(enum Type type) {
-	char piece;
-
 	switch(type) {
-		case pawn: piece = 'p'; break;
-		case knight: piece = 'n'; break;
-		case bishop: piece = 'b'; break;
-		case rook: piece = 'r'; break;
-		case queen: piece = 'q'; break;
-		case king: piece = 'k'; break;
-		case empty: piece = '.'; break;
+		case pawn: return 'p';
+		case knight: return 'n';
+		case bishop: return 'b';
+		case rook: return 'r';
+		case queen: return 'q';
+		case king: return 'k';
+		case empty: return '.';
 	}
+}
 
-	return piece;
+wchar_t get_piece_unicode(struct Piece piece) {
+	enum Type type = piece.type;
+	enum Color color = piece.color;
+
+	// idk why this colored is reversed tbh, but the color is right but its being weird :/
+	if (color == black) {
+		switch(type) {
+			case pawn: return L'\u2659';
+			case knight: return L'\u2658';
+			case bishop: return L'\u2657';
+			case rook: return L'\u2656';
+			case queen: return L'\u2655';
+			case king: return L'\u2654';
+		}
+	} else if (color == white) {
+		switch(type) {
+			case pawn: return L'\u265F';
+			case knight: return L'\u265E';
+			case bishop: return L'\u265D';
+			case rook: return L'\u265C';
+			case queen: return L'\u265B';
+			case king: return L'\u265A';
+		}
+	} else return '.';
 }
 
 char get_color_char(enum Color color) {
-	char p_color;
-
 	switch(color) {
-		case white: p_color = 'w'; break;
-		case black: p_color = 'b'; break;
-		case none: p_color = 'n'; break;
-		default: p_color = '?'; break;
+		case white: return 'w';
+		case black: return 'b';
+		case none: return 'n';
+		default: return '?';
 	}
-
-	return p_color;
 }
 
-void print_board(struct Piece board[COL][ROW]) {
+void print_board(struct Piece board[COL][ROW], enum Color color) {
 	printf("\n");
 
-	for (size_t r = 0; r < ROW; r++) {
-		for (size_t c = 0; c < COL; c++) {
-			struct Piece square = board[r][c];
+	bool isWhite = (color == white);
 
-			char color = square.color;
-			char type = get_type_char(square.type);
+	// an extra row for letters
+	// goofy ah for loop, how do u make this stuff readable and simple :/
+	for (int r = isWhite ? 0 : (ROW - 1); isWhite ? (r < ROW + 1) : (r >= -1); isWhite ? (r++) : (r--)) {
+		if (isWhite ? (r == ROW) : (r == -1)) printf("\n   a b c d e f g h");
+		
+		else {
+			// bruh this was some straight up prodigy level stuff
+			printf("%d  ", abs(r - 8));
 
-			char f_type = color == white ? toupper(type) : type;
+			for (size_t c = 0; c < COL; c++) {
+				struct Piece square = board[r][c];
 
-			printf("%c", f_type);
+				wchar_t symbol = get_piece_unicode(square);
+
+				printf("%lc ", symbol);
+			}
 		}
+		
 		printf("\n");
 	}
 
@@ -198,7 +227,6 @@ enum Color reverse_color(enum Color color) {
 
 
 /*** movegen ***/
-
 /*** pseudolegality thanks to https://github.com/JDSherbert for some movegen logic ***/
 bool pawn_rule(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
    	if (x < 0 || x >= ROW || y < 0 || y >= COL || pX < 0 || pX >= ROW || pY < 0 || pY >= COL) {
@@ -357,7 +385,7 @@ void game(struct Piece board[ROW][COL]) {
 	clear_scr();
 
 	while (true) {
-		print_board(board);
+		print_board(board, color_to_move);
 
 		char from[3], to[3];
 		int y, x, pY, pX;
@@ -415,6 +443,7 @@ void game(struct Piece board[ROW][COL]) {
 
 /*** mains ***/
 int main() {
+	setlocale(LC_ALL, "");
 	struct Piece board[ROW][COL];
 	set_board(STARTING_FEN, board);
 	game(board);
