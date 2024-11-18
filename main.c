@@ -10,6 +10,19 @@
 #include <stdio.h>
 
 
+/***
+   y y y y y y y y
+x  ♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖ 
+x  ♙ ♙ ♙ ♙ ♙ ♙ ♙ ♙ 
+x  . . . . . . . . 
+x  . . . . . . . . 
+x  . . . . . . . . 
+x  . . . . . . . . 
+x  ♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟ 
+x  ♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜ 
+ ***/
+
+
 /*** definition ***/
 #define STARTING_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 #define BOARD_SIZE 64
@@ -371,6 +384,42 @@ bool check_move(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
 	}
 }
 
+/*** perft ***/
+void perft(struct Piece board[ROW][COL]) {
+	int pos_searched = 0;
+
+	for (int x = 0; x < COL; x++) {
+		for (int y = 0; y < ROW; y++) {
+			enum Type type = board[x][y].type;
+
+			if (type == empty) continue;
+
+			for (int pX = 0; pX < COL; pX++) {
+				for (int pY = 0; pY < ROW; pY++) {
+					pos_searched++;
+
+					switch (type) {
+						case pawn: if(!pawn_rule(board, x, y, pX, pY)) continue; break;
+						case knight: if(!knight_rule(board, x, y, pX, pY)) continue; break;
+						case bishop: if(!bishop_rule(board, x, y, pX, pY)) continue; break;
+						case rook: if(!rook_rule(board, x, y, pX, pY)) continue; break;
+						case queen: if(!queen_rule(board, x, y, pX, pY)) continue; break;
+						case king: if(!king_rule(board, x, y, pX, pY)) continue; break;
+					}
+
+					if (board[x][y].color == board[pX][pY].color) continue;
+
+					char type_char = get_type_char(type);
+
+					printf("%c | %c %d, %c %d \n", type_char, y + 'a', x + 1, pY + 'a', pX + 1);
+				}
+			}
+		}
+	}
+
+	printf("%d", pos_searched);
+}
+
 /*** gameloop ***/
 void game(struct Piece board[ROW][COL]) {
 	int x;
@@ -417,6 +466,11 @@ void game(struct Piece board[ROW][COL]) {
 			continue;
 		}
 
+		if (board[x][y].color == board[pX][pY].color) {
+			printf("Can't move your piece onto your own color");
+			continue;
+		}
+
 		printf("%c, x%d, y%d, pX%d, pY%d \n", get_type_char(board[x][y].type), x, y, pX, pY);
 
 		if (check_move(board, x, y, pX, pY)) {
@@ -446,7 +500,10 @@ int main() {
 	setlocale(LC_ALL, "");
 	struct Piece board[ROW][COL];
 	set_board(STARTING_FEN, board);
-	game(board);
+	//game(board);
+	
+	print_board(board, black);
+	perft(board);
 
 	return 0;
 }
