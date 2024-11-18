@@ -53,7 +53,7 @@ struct Piece {
 
 /*** General Helper Functions ***/
 void clear_scr() {
-	printf("\e[1;1H\e[2J");
+	//printf("\e[1;1H\e[2J");
 }
 
 /*** Helper Functions ***/
@@ -330,7 +330,7 @@ bool queen_rule(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
 }
 
 bool king_rule(struct Piece board[ROW][COL], int x, int y, int pX, int pY) { 
-	if ((x - pX <= 1) && (y - pY <= 1)) return true;
+	if (abs(x - pX) <= 1 && abs(y - pY) <= 1) return true;
 	else return false;
 }
 
@@ -417,7 +417,7 @@ void perft(struct Piece board[ROW][COL]) {
 		}
 	}
 
-	printf("%d", pos_searched);
+	printf("\n Searched %d positions! \n\n", pos_searched);
 }
 
 /*** gameloop ***/
@@ -491,7 +491,10 @@ void game(struct Piece board[ROW][COL]) {
 		}
 
 		printf("\n");
+		
+		perft(board);
 	}
+	
 }
 
 
@@ -500,10 +503,7 @@ int main() {
 	setlocale(LC_ALL, "");
 	struct Piece board[ROW][COL];
 	set_board(STARTING_FEN, board);
-	//game(board);
-	
-	print_board(board, black);
-	perft(board);
+	game(board);
 
 	return 0;
 }
