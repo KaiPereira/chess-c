@@ -1,4 +1,5 @@
 /*** dependencies ***/
+#include <term.h>
 #include <locale.h>
 #include <wchar.h>
 #include <stdlib.h>
@@ -157,6 +158,7 @@ void print_board(struct Piece board[COL][ROW], enum Color color) {
 	printf("\n");
 }
 
+
 int row_num(char x) {
 	switch(tolower(x)) {
 		case 'a': return 0;
@@ -270,27 +272,28 @@ bool knight_rule(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
 }
 
 bool bishop_rule(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
-	if ((y - pY) == (x - pX)) {
-		int dx = (x > pX) ? 1 : -1;
-		int dy = (y > pY) ? 1 : -1;
+	if (abs(y - pY) != abs(x - pX)) return false;
 
-		int loop_x = dx + x;
-		int loop_y = dy + y;
+	int dx = (pX > x) ? 1 : -1;
+	int dy = (pY > y) ? 1 : -1;
 
-		while (loop_x != pX) {
-			if (board[loop_x][loop_y].type != empty) return false;
+	int loop_x = x + dx;
+	int loop_y = y + dy;
 
-			loop_x += dx;
-			loop_y += dy;
-		}
-		
-		return true;
+	while (loop_x != pX && loop_y != pY) {
+		if (loop_x < 0 || loop_x >= ROW || loop_y < 0 || loop_y >= COL) return false;
 
-	} else return false;
+		if (board[loop_x][loop_y].type != empty) return false;
+
+		loop_x += dx;
+		loop_y += dy;
+	}
+
+	return true;
 }
 
 bool rook_rule(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
-	if ((y == pY) || (x == pX)) {
+	if (y == pY || x == pX) {
 		int dx = (x == pX) ? 0 : ((pX > x) ? 1 : -1);
                 int dy = (y == pY) ? 0 : ((pY > y) ? 1 : -1);
 
@@ -298,7 +301,7 @@ bool rook_rule(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
                 int loop_y  = y + dy;
 
                 while (loop_x != pX || loop_y != pY) {
-                    if (board[x][y].type != empty) return false;
+                    if (board[loop_x][loop_y].type != empty) return false;
 
                     loop_x += dx;
                     loop_y += dy;
@@ -310,23 +313,41 @@ bool rook_rule(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
 }
 
 bool queen_rule(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
-	if ((y == pY) || (x == pX) || (y - pY) == (x - pX)) {
+	if (y == pY || x == pX) {
 		int dx = (x == pX) ? 0 : ((pX > x) ? 1 : -1);
                 int dy = (y == pY) ? 0 : ((pY > y) ? 1 : -1);
 
-                int loop_x = x + dx;
-                int loop_y = y + dy;
+                int loop_x  = x + dx;
+                int loop_y  = y + dy;
 
-                while (x != pX || y != pY) {
-                    if (board[x][y].type != empty) return false;
+                while (loop_x != pX || loop_y != pY) {
+                    if (board[loop_x][loop_y].type != empty) return false;
 
                     loop_x += dx;
                     loop_y += dy;
                 }
 
                 return true;
+	}
 
-	} else return false;
+	if (abs(y - pY) != abs(x - pX)) return false;
+
+	int dx = (pX > x) ? 1 : -1;
+	int dy = (pY > y) ? 1 : -1;
+
+	int loop_x = x + dx;
+	int loop_y = y + dy;
+
+	while (loop_x != pX && loop_y != pY) {
+		if (loop_x < 0 || loop_x >= ROW || loop_y < 0 || loop_y >= COL) return false;
+
+		if (board[loop_x][loop_y].type != empty) return false;
+
+		loop_x += dx;
+		loop_y += dy;
+	}
+
+	return true;
 }
 
 bool king_rule(struct Piece board[ROW][COL], int x, int y, int pX, int pY) { 
@@ -366,7 +387,6 @@ bool king_attacked(struct Piece board[ROW][COL], enum Color king_color) {
 
 	return false;
 }
-
 
 /*** final move gen ***/
 bool check_move(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
@@ -483,6 +503,7 @@ void game(struct Piece board[ROW][COL]) {
 			if (king_attacked(board, color_to_move)) {
 				printf("Your king is in check \n");
 				memcpy(board, temp_board, sizeof(struct Piece) * ROW * COL);
+				continue;
 			}
 
 			color_to_move = reverse_color(color_to_move);
