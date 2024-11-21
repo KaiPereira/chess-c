@@ -243,23 +243,26 @@ enum Color reverse_color(enum Color color) {
 
 /*** movegen ***/
 /*** pseudolegality thanks to https://github.com/JDSherbert for some movegen logic ***/
+// en passant is stupid :/
 bool pawn_rule(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
-   	if (x < 0 || x >= ROW || y < 0 || y >= COL || pX < 0 || pX >= ROW || pY < 0 || pY >= COL) {
-        	return false;
-   	}
+	if (x < 0 || x >= ROW || y < 0 || y >= COL || pX < 0 || pX >= ROW || pY < 0 || pY >= COL) {
+		return false;
+	}
 
-   	enum Color color = board[x][y].color;
+	if (board[x][y].type != pawn) return false;
+
+	enum Color color = board[x][y].color;
 	enum Type type = board[pX][pY].type;
 
-   	if (color == white) {
-        	if (x == 6 && pX == 4 && y == pY && type == empty) return true;
-        	if (x - 1 == pX && y == pY && type == empty) return true;
-        	if (x - 1 == pX && (y - 1 == pY || y + 1 == pY) && board[pX][pY].color == black) return true;
-    	} else if (color == black) {
-        	if (x == 1 && pX == 3 && y == pY && type == empty) return true;
-        	if (x + 1 == pX && y == pY && type == empty) return true;
-        	if (x + 1 == pX && (y - 1 == pY || y + 1 == pY) && board[pX][pY].color == white) return true;
-    	}
+	if (color == white) {
+		if (x == 6 && pX == 4 && y == pY && type == empty && board[5][y].type == empty) return true;
+		if (x - 1 == pX && y == pY && type == empty) return true;
+		if (x - 1 == pX && (y - 1 == pY || y + 1 == pY) && type != empty && board[pX][pY].color == black) return true;
+	} else if (color == black) {
+		if (x == 1 && pX == 3 && y == pY && type == empty && board[2][y].type == empty) return true;
+		if (x + 1 == pX && y == pY && type == empty) return true;
+		if (x + 1 == pX && (y - 1 == pY || y + 1 == pY) && type != empty && board[pX][pY].color == white) return true;
+	}
 
 	return false;
 }
@@ -374,13 +377,14 @@ bool king_attacked(struct Piece board[ROW][COL], enum Color king_color) {
 			if (color == king_color) continue;
 
 			switch(type) {
-				case pawn: isAttacked = pawn_rule(board, r, c, x, y);
-				case knight: isAttacked = knight_rule(board, r, c, x, y);
-				case bishop: isAttacked = bishop_rule(board, r, c, x, y);
-				case rook: isAttacked = rook_rule(board, r, c, x, y);
-				case queen: isAttacked = queen_rule(board, r, c, x, y);
+				case pawn: isAttacked = pawn_rule(board, r, c, x, y); break;
+				case knight: isAttacked = knight_rule(board, r, c, x, y); break;
+				case bishop: isAttacked = bishop_rule(board, r, c, x, y); break;
+				case rook: isAttacked = rook_rule(board, r, c, x, y); break;
+				case queen: isAttacked = queen_rule(board, r, c, x, y); break;
 			}
-
+	
+			printf("%lc %d \n", get_piece_unicode(board[r][c]), c);
 			if (isAttacked) return true;
 		}
 	}
