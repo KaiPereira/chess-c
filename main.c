@@ -450,6 +450,14 @@ void game(struct Piece board[ROW][COL]) {
 	int pX;
 	int pY;
 
+
+	// Check king castling
+	bool is_king_moved = false;
+	bool is_rook1_moved = false;
+	bool is_rook2_moved = false;
+	bool castling = false;
+
+
 	enum Color color_to_move = white;
 
 	int i;
@@ -460,7 +468,6 @@ void game(struct Piece board[ROW][COL]) {
 		print_board(board, color_to_move);
 
 		char from[3], to[3];
-		int y, x, pY, pX;
 
 		printf("Enter current piece position (e2, b4, etc): ");
 		scanf("%2s", from);
@@ -494,17 +501,9 @@ void game(struct Piece board[ROW][COL]) {
 			continue;
 		}
 
-		// Check king castling
-		bool is_king_moved = false;
-		bool is_rook1_moved = false;
-		bool is_rook2_moved = false;
-		bool castling = false;
-
 		if (x == pX && !is_king_moved) {
-			printf("FJKESFLESHFKAWFKLAWF");
 			if ((y - pY == -2) && !is_rook2_moved) castling = true;
 			if ((y - pY == 2) && !is_rook1_moved) castling = true;
-			printf("castling");
 		}
 
 
