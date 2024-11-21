@@ -25,7 +25,7 @@ x  ♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
 
 
 /*** definition ***/
-#define STARTING_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+#define STARTING_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1"
 #define BOARD_SIZE 64
 #define ROW 8
 #define COL 8
@@ -500,8 +500,12 @@ void game(struct Piece board[ROW][COL]) {
 		bool is_rook2_moved = false;
 		bool castling = false;
 
-		if ((x - pX == -2) && !is_rook2_moved && !is_king_moved) castling = true;
-		if ((x - pX == 2) && !is_rook1_moved && !is_king_moved) castling = true;
+		if (x == pX && !is_king_moved) {
+			printf("FJKESFLESHFKAWFKLAWF");
+			if ((y - pY == -2) && !is_rook2_moved) castling = true;
+			if ((y - pY == 2) && !is_rook1_moved) castling = true;
+			printf("castling");
+		}
 
 
 		if (check_move(board, x, y, pX, pY) || castling) {
@@ -520,8 +524,8 @@ void game(struct Piece board[ROW][COL]) {
 			} else if (type == king) {
 				is_king_moved = true;
 			} else if (type == rook) {
-				if (x == 0) is_rook1_moved = true;
-				if (x == 7) is_rook2_moved = true;
+				if (y == 0) is_rook1_moved = true;
+				if (y == 7) is_rook2_moved = true;
 			}
 
 			color_to_move = reverse_color(color_to_move);
