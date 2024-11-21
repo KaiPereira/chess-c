@@ -384,7 +384,6 @@ bool king_attacked(struct Piece board[ROW][COL], enum Color king_color) {
 				case queen: isAttacked = queen_rule(board, r, c, x, y); break;
 			}
 	
-			printf("%lc %d \n", get_piece_unicode(board[r][c]), c);
 			if (isAttacked) return true;
 		}
 	}
@@ -495,10 +494,19 @@ void game(struct Piece board[ROW][COL]) {
 			continue;
 		}
 
-		printf("%c, x%d, y%d, pX%d, pY%d \n", get_type_char(board[x][y].type), x, y, pX, pY);
+		// Check king castling
+		bool is_king_moved = false;
+		bool is_rook1_moved = false;
+		bool is_rook2_moved = false;
+		bool castling = false;
 
-		if (check_move(board, x, y, pX, pY)) {
+		if ((x - pX == -2) && !is_rook2_moved && !is_king_moved) castling = true;
+		if ((x - pX == 2) && !is_rook1_moved && !is_king_moved) castling = true;
+
+
+		if (check_move(board, x, y, pX, pY) || castling) {
 			struct Piece temp_board[ROW][COL];
+			enum Type type = board[x][y].type == king;
 
 			memcpy(temp_board, board, sizeof(struct Piece) * ROW * COL);
 
@@ -507,7 +515,13 @@ void game(struct Piece board[ROW][COL]) {
 			if (king_attacked(board, color_to_move)) {
 				printf("Your king is in check \n");
 				memcpy(board, temp_board, sizeof(struct Piece) * ROW * COL);
+				castling = false;
 				continue;
+			} else if (type == king) {
+				is_king_moved = true;
+			} else if (type == rook) {
+				if (x == 0) is_rook1_moved = true;
+				if (x == 7) is_rook2_moved = true;
 			}
 
 			color_to_move = reverse_color(color_to_move);
@@ -517,7 +531,7 @@ void game(struct Piece board[ROW][COL]) {
 
 		printf("\n");
 		
-		perft(board);
+		//perft(board);
 	}
 	
 }
