@@ -220,10 +220,10 @@ bool check_pos(const char *input, int *row, int *col) {
 }
 
 void find_piece(struct Piece board[ROW][COL], enum Color color, int *x, int *y) {
-	int r, c = 0;
+	int r, c;
 
-	for (; r < ROW; r++) {
-		for (; c < COL; c++) {
+	for (r = 0; r < ROW; r++) {
+		for (c = 0; c < COL; c++) {
 			if (board[r][c].type == king && board[r][c].color == color) {
 				*x = r;
 				*y = c;
@@ -467,9 +467,8 @@ void game(struct Piece board[ROW][COL]) {
 	bool is_king_moved = false;
 	bool is_rook1_moved = false;
 	bool is_rook2_moved = false;
-	bool castling = false;
-
-
+	bool castling = true;
+	
 	enum Color color_to_move = white;
 
 	int i;
@@ -512,24 +511,20 @@ void game(struct Piece board[ROW][COL]) {
 			continue;
 		}
 
-		if (x == pX && !is_king_moved) {
-			if ((y - pY == -2) && !is_rook2_moved) castling = true;
-			if ((y - pY == 2) && !is_rook1_moved) castling = true;
+
+		// castling check
+		// rook moved, check
+		if (board[x][y].type == rook) {
+			
 		}
 
-
-		bool castling = true;
-		bool king_moved = false;
-		bool rook1_moved = false;
-		bool rook2_moved = false;
-
-
+		// castling shenanigans
 		if (board[x][y].type == king) {
-			if (!king_moved && x == pX) {
+			if (x == pX && castling) {
 				// get which side its castling to
 				int rook_row = color_to_move == white ? 7 : 0;
 
-				if (pY == 2 && !rook1_moved) {
+				if (pY == 2 && !is_rook1_moved) {
 					for (int w = y; w >= pY; w--) {
 						if (board_check_status(board, color_to_move)) {
 							printf("You can't castle out of/into check");
@@ -539,19 +534,28 @@ void game(struct Piece board[ROW][COL]) {
 						if (w == y) continue;
 
 						move_piece(board, x, w+1, pX, w);
+
+						if (w == pY) move_piece(board, rook_row, 0, rook_row, 3); castling = false;
 					}
 
 					continue;
-				} else if (pY == 6 && !rook2_moved) {
-					if (board_check_status(board, color_to_move)) {
-						printf("You can't castle out of check");
-						break;
+				} else if (pY == 6 && !is_rook2_moved) {
+					for (int w = y; w <= pY; w++) {
+						if (board_check_status(board, color_to_move)) {
+							printf("You can't castle out of/into check");
+							continue;
+						}
+
+						if (w == y) continue;
+
+						move_piece(board, x, w-1, pX, w);
+
+						if (w == pY) move_piece(board, rook_row, 7, rook_row, 5); castling = false;
 					}
 
-					move_piece(board, x, y, pX, pY);
-					move_piece(board, rook_row, 7, rook_row, 5);
+					continue;
 				}
-			}
+			} else printf("You don't have castling rights - rookie mistake"); continue;
 		}
 
 		if (check_move(board, x, y, pX, pY)) {
