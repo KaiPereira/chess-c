@@ -511,13 +511,6 @@ void game(struct Piece board[ROW][COL]) {
 			continue;
 		}
 
-
-		// castling check
-		// rook moved, check
-		if (board[x][y].type == rook) {
-			
-		}
-
 		// castling shenanigans
 		if (board[x][y].type == king) {
 			if (x == pX && castling) {
@@ -558,6 +551,7 @@ void game(struct Piece board[ROW][COL]) {
 			} else printf("You don't have castling rights - rookie mistake"); continue;
 		}
 
+
 		if (check_move(board, x, y, pX, pY)) {
 			move_piece(board, x, y, pX, pY);
 
@@ -566,10 +560,26 @@ void game(struct Piece board[ROW][COL]) {
 				continue;
 			}
 
+			// get which side its castling to
+			int rook_row = color_to_move == white ? 7 : 0;
+
+			// castling check
+			if (board[x][y].type == rook && y == 0 && x == rook_row) {
+				is_rook1_moved = true;
+			} else if (board[x][y].type == rook && y == 7 && x == rook_row) {
+				is_rook2_moved = true;
+			} else if (board[x][y].type == king) {
+				castling = false;
+			}
+
 			color_to_move = reverse_color(color_to_move);
 		} else {
 			printf("Unable to move that piece there");
+			continue;
 		}
+
+
+
 
 		printf("\n");
 		
