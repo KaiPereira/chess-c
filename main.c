@@ -407,6 +407,18 @@ bool check_move(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
 	}
 }
 
+bool board_check_status(struct Piece board[ROW][COL], enum Color color_to_move) {
+	struct Piece temp_board[ROW][COL];
+
+	memcpy(temp_board, board, sizeof(struct Piece) * ROW * COL);
+	
+	if (king_attacked(board, color_to_move)) {
+		memcpy(board, temp_board, sizeof(struct Piece) * ROW * COL);
+
+		return true;
+	}
+}
+
 /*** perft ***/
 void perft(struct Piece board[ROW][COL]) {
 	int pos_searched = 0;
@@ -490,7 +502,6 @@ void game(struct Piece board[ROW][COL]) {
 
 		clear_scr();
 
-
 		if (board[x][y].color != color_to_move) {
 			printf("Wrong color to move \n");
 			continue;
@@ -507,24 +518,48 @@ void game(struct Piece board[ROW][COL]) {
 		}
 
 
-		if (check_move(board, x, y, pX, pY) || castling) {
-			struct Piece temp_board[ROW][COL];
-			enum Type type = board[x][y].type == king;
+		bool castling = true;
+		bool king_moved = false;
+		bool rook1_moved = false;
+		bool rook2_moved = false;
 
-			memcpy(temp_board, board, sizeof(struct Piece) * ROW * COL);
 
+		if (board[x][y].type == king) {
+			if (!king_moved && x == pX) {
+				// get which side its castling to
+				int rook_row = color_to_move == white ? 7 : 0;
+
+				if (pY == 2 && !rook1_moved) {
+					for (int w = y; w >= pY; w--) {
+						if (board_check_status(board, color_to_move)) {
+							printf("You can't castle out of/into check");
+							continue;
+						}
+
+						if (w == y) continue;
+
+						move_piece(board, x, w+1, pX, w);
+					}
+
+					continue;
+				} else if (pY == 6 && !rook2_moved) {
+					if (board_check_status(board, color_to_move)) {
+						printf("You can't castle out of check");
+						break;
+					}
+
+					move_piece(board, x, y, pX, pY);
+					move_piece(board, rook_row, 7, rook_row, 5);
+				}
+			}
+		}
+
+		if (check_move(board, x, y, pX, pY)) {
 			move_piece(board, x, y, pX, pY);
-			
-			if (king_attacked(board, color_to_move)) {
-				printf("Your king is in check \n");
-				memcpy(board, temp_board, sizeof(struct Piece) * ROW * COL);
-				castling = false;
+
+			if (board_check_status(board, color_to_move)) {
+				printf("Your king is currently in check. \n");
 				continue;
-			} else if (type == king) {
-				is_king_moved = true;
-			} else if (type == rook) {
-				if (y == 0) is_rook1_moved = true;
-				if (y == 7) is_rook2_moved = true;
 			}
 
 			color_to_move = reverse_color(color_to_move);
