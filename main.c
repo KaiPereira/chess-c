@@ -1,4 +1,3 @@
-/*** dependencies ***/
 #include <term.h>
 #include <locale.h>
 #include <wchar.h>
@@ -25,7 +24,7 @@ x  ♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
 
 
 /*** definition ***/
-#define STARTING_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1"
+#define STARTING_FEN "rnb1kbnr/pppppppp/8/8/3q4/8/PP1PP1PP/R3K2R w KQkq - 0 1"
 #define BOARD_SIZE 64
 #define ROW 8
 #define COL 8
@@ -54,7 +53,7 @@ struct Piece {
 
 /*** General Helper Functions ***/
 void clear_scr() {
-	//printf("\e[1;1H\e[2J");
+	printf("\e[1;1H\e[2J");
 }
 
 /*** Helper Functions ***/
@@ -464,10 +463,14 @@ void game(struct Piece board[ROW][COL]) {
 
 
 	// Check king castling
-	bool is_king_moved = false;
-	bool is_rook1_moved = false;
-	bool is_rook2_moved = false;
-	bool castling = true;
+	bool is_rook1_white_moved = false;
+	bool is_rook2_white_moved = false;
+	bool castling_white = true;
+
+	bool is_rook1_black_moved = false;
+	bool is_rook2_black_moved = false;
+	bool castling_black = true;
+
 	
 	enum Color color_to_move = white;
 
@@ -511,52 +514,72 @@ void game(struct Piece board[ROW][COL]) {
 			continue;
 		}
 
-
-		// castling check
-		// rook moved, check
-		if (board[x][y].type == rook) {
-			
-		}
-
 		// castling shenanigans
 		if (board[x][y].type == king) {
-			if (x == pX && castling) {
+			if (x == pX && (color_to_move == white ? castling_white : castling_black)) {
 				// get which side its castling to
 				int rook_row = color_to_move == white ? 7 : 0;
 
-				if (pY == 2 && !is_rook1_moved) {
+				struct Piece temp_board[ROW][COL];
+
+				memcpy(temp_board, board, sizeof(struct Piece) * ROW * COL);
+
+				if (pY == 2 && (color_to_move == white ? !is_rook1_white_moved : !is_rook1_black_moved)) {
 					for (int w = y; w >= pY; w--) {
-						if (board_check_status(board, color_to_move)) {
-							printf("You can't castle out of/into check");
+						if (king_attacked(board, color_to_move)) {
+							printf("You can't castle out of/into check \n");
+							memcpy(board, temp_board, sizeof(struct Piece) * ROW * COL);
+
 							continue;
 						}
+
+						if (board[x][w].color == color_to_move) continue;
 
 						if (w == y) continue;
 
 						move_piece(board, x, w+1, pX, w);
 
-						if (w == pY) move_piece(board, rook_row, 0, rook_row, 3); castling = false;
-					}
+						if (w == pY) {
+							move_piece(board, rook_row, 0, rook_row, 3);
 
-					continue;
-				} else if (pY == 6 && !is_rook2_moved) {
-					for (int w = y; w <= pY; w++) {
-						if (board_check_status(board, color_to_move)) {
-							printf("You can't castle out of/into check");
+							if (color_to_move == white) castling_white = false;
+							else castling_black = false;
+							
+							color_to_move = reverse_color(color_to_move);
+
 							continue;
 						}
+					}
+				} else if (pY == 6 && (color_to_move == white ? !is_rook2_white_moved : !is_rook2_black_moved)) {
+					for (int w = y; w <= pY; w++) {
+						if (king_attacked(board, color_to_move)) {
+							printf("You can't castle out of/into check \n");
+							memcpy(board, temp_board, sizeof(struct Piece) * ROW * COL);
+
+							continue;
+						}
+
+						if (board[x][w].color == color_to_move) continue;
 
 						if (w == y) continue;
 
 						move_piece(board, x, w-1, pX, w);
 
-						if (w == pY) move_piece(board, rook_row, 7, rook_row, 5); castling = false;
-					}
+						if (w == pY) {
+							move_piece(board, rook_row, 7, rook_row, 5);
 
-					continue;
+							if (color_to_move == white) castling_white = false;
+							else castling_black = false;
+
+							color_to_move = reverse_color(color_to_move);
+
+							continue;
+						}
+					}
 				}
-			} else printf("You don't have castling rights - rookie mistake"); continue;
+			} else printf("You don't have castling rights - rookie mistake \n");
 		}
+
 
 		if (check_move(board, x, y, pX, pY)) {
 			move_piece(board, x, y, pX, pY);
@@ -565,6 +588,19 @@ void game(struct Piece board[ROW][COL]) {
 				printf("Your king is currently in check. \n");
 				continue;
 			}
+
+
+			// Change castling rights
+			if (color_to_move == white) {
+				if (board[x][y].type == rook && y == 7) is_rook1_white_moved = true;
+				else if (board[x][y].type == rook && y == 0) is_rook2_white_moved = true;
+				else if (board[x][y].type == king) castling_white = false;
+			} else {
+				if (board[x][y].type == rook && y == 7) is_rook1_white_moved = true;
+				else if (board[x][y].type == rook && y == 0) is_rook2_white_moved = true;
+				else if (board[x][y].type == king) castling_white = false;
+			}
+
 
 			color_to_move = reverse_color(color_to_move);
 		} else {
