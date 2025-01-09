@@ -26,7 +26,7 @@ x  ♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
 
 
 /*** definition ***/
-#define STARTING_FEN "rnb1kbnr/pppppppp/8/8/4q3/8/PP1PPPPP/R2BKP1R w kq - 0 1"
+#define STARTING_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w kq - 0 1"
 #define BOARD_SIZE 64
 #define ROW 8
 #define COL 8
@@ -408,53 +408,69 @@ bool check_move(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
 	}
 }
 
-bool board_check_status(struct Piece board[ROW][COL], enum Color color_to_move) {
+bool board_status(struct Piece board[ROW][COL], enum Color color_to_move, int x, int y, int pX, int pY) {
+	if (king_attacked(board, color_to_move)) return true;
+
 	struct Piece temp_board[ROW][COL];
 
 	memcpy(temp_board, board, sizeof(struct Piece) * ROW * COL);
-	
-	if (king_attacked(board, color_to_move)) {
-		memcpy(board, temp_board, sizeof(struct Piece) * ROW * COL);
 
-		return true;
-	}
+	move_piece(temp_board, x, y, pX, pY);
+	
+	if (king_attacked(temp_board, color_to_move)) return true;
+	
+	return false;
 }
 
 /*** perft ***/
 unsigned long perft(struct Piece board[ROW][COL], int depth, enum Color color_to_move) {
-    if (depth == 0) {
-        return 1;    }
+	if (depth == 0) {
+		return 1;    
+	}
 
-    unsigned long nodes = 0;
+	unsigned long nodes = 0;
 
-    // Loop through all pieces of the current player
-    for (int x = 0; x < ROW; x++) {
-        for (int y = 0; y < COL; y++) {
-            if (board[x][y].color != color_to_move) continue;
+	// Loop through all pieces of the current player
+	for (int x = 0; x < ROW; x++) {
+		for (int y = 0; y < COL; y++) {
 
-            // Generate pseudo-legal moves for this piece
-            for (int pX = 0; pX < ROW; pX++) {
-                for (int pY = 0; pY < COL; pY++) {
-                    if (!check_move(board, x, y, pX, pY)) continue;
+			if (board[x][y].color != color_to_move) continue;
 
-                    // Make the move
-                    struct Piece captured = board[pX][pY];
-                    move_piece(board, x, y, pX, pY);
+			// Generate pseudo-legal moves for this piece
+			for (int pX = 0; pX < ROW; pX++) {
+				for (int pY = 0; pY < COL; pY++) {
+					if (!check_move(board, x, y, pX, pY)) continue;
 
-                    // Check legality (doesn't leave own king in check)
-                    if (!king_attacked(board, color_to_move)) {
-                        nodes += perft(board, depth - 1, reverse_color(color_to_move));
-                    }
+					if (board[x][y].color != color_to_move) continue;
 
-                    // Undo the move
-                    board[pX][pY] = captured;
-                    board[x][y] = board[pX][pY];
-                }
-            }
-        }
-    }
+					if (board[x][y].color == board[pX][pY].color) continue;
 
-    return nodes;
+					if (king_attacked(board, color_to_move)) continue;
+
+					// Save the pieces involved in the move
+					struct Piece moving_piece = board[x][y];
+					struct Piece captured_piece = board[pX][pY];
+
+					char node_type = get_type_char(moving_piece.type);
+					//printf("%c, x: %d, y: %d \n", node_type, pX, pY); 
+
+					// Make the move
+					move_piece(board, x, y, pX, pY);
+
+					// Check legality (doesn't leave own king in check)
+					if (!king_attacked(board, color_to_move)) {
+						nodes += perft(board, depth - 1, reverse_color(color_to_move));
+					}
+
+					// Undo the move
+					board[x][y] = moving_piece;
+					board[pX][pY] = captured_piece;
+				}
+			}
+		}
+	}
+
+	return nodes;
 }
 
 void test_perft(struct Piece board[ROW][COL], int depth, enum Color color_to_move) {
@@ -495,6 +511,8 @@ void game(struct Piece board[ROW][COL]) {
 	clear_scr();
 
 	while (true) {
+		test_perft(board, 4, color_to_move);
+
 		print_board(board, color_to_move);
 
 		char from[3], to[3];
@@ -502,7 +520,7 @@ void game(struct Piece board[ROW][COL]) {
 		printf("Enter current piece position (e2, b4, etc): ");
 		scanf("%2s", from);
 
-		// Make the move and then check if that leaves the king in check
+		// check the coordinate
 		if (!check_pos(from, &x, &y)) {
 			printf("Invalid coordinates \n");
 			clear_scr();
@@ -512,7 +530,7 @@ void game(struct Piece board[ROW][COL]) {
 		printf("Enter target position (e3, b5, etc): ");
 		scanf("%2s", to);
 
-		// Make the move and then check if that leaves the king in check
+		// check coordinates for 2
 		if (!check_pos(to, &pX, &pY)) {
 			printf("Invalid coordinates \n");
 			continue;
@@ -584,13 +602,12 @@ void game(struct Piece board[ROW][COL]) {
 
 
 		if (check_move(board, x, y, pX, pY)) {
-			move_piece(board, x, y, pX, pY);
-
-			if (board_check_status(board, color_to_move)) {
-				printf("Your king is currently in check. \n");
+			if (board_status(board, color_to_move, x, y, pX, pY)) {
+				printf("You're in check or moving into it. \n");
 				continue;
 			}
 
+			move_piece(board, x, y, pX, pY);
 
 			// Change castling rights
 			if (color_to_move == white) {
@@ -610,8 +627,6 @@ void game(struct Piece board[ROW][COL]) {
 		}
 
 		printf("\n");
-		
-		test_perft(board, 1, color_to_move);
 	}
 	
 }
