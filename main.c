@@ -445,7 +445,7 @@ unsigned long perft(struct Piece board[ROW][COL], int depth, enum Color color_to
 
 					if (board[x][y].color == board[pX][pY].color) continue;
 
-					if (board_status(board, color_to_move, x, y, pX, pY)) continue;
+					//if (board_status(board, color_to_move, x, y, pX, pY)) continue;
 
 					// Save the pieces involved in the move
 					struct Piece moving_piece = board[x][y];
@@ -470,6 +470,12 @@ unsigned long perft(struct Piece board[ROW][COL], int depth, enum Color color_to
 
 	return nodes;
 }
+
+/*** evaluation ***/
+float evaluate(struct Piece board[ROW][COL]) {
+
+}
+
 
 void test_perft(struct Piece board[ROW][COL], int depth, enum Color color_to_move) {
 	clock_t start_time = clock();
@@ -509,7 +515,7 @@ void game(struct Piece board[ROW][COL]) {
 	clear_scr();
 
 	while (true) {
-		test_perft(board, 4, color_to_move);
+		test_perft(board, 5, color_to_move);
 
 		print_board(board, color_to_move);
 
