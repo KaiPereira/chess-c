@@ -445,7 +445,7 @@ unsigned long perft(struct Piece board[ROW][COL], int depth, enum Color color_to
 
 					if (board[x][y].color == board[pX][pY].color) continue;
 
-					if (king_attacked(board, color_to_move)) continue;
+					if (board_status(board, color_to_move, x, y, pX, pY)) continue;
 
 					// Save the pieces involved in the move
 					struct Piece moving_piece = board[x][y];
@@ -458,9 +458,7 @@ unsigned long perft(struct Piece board[ROW][COL], int depth, enum Color color_to
 					move_piece(board, x, y, pX, pY);
 
 					// Check legality (doesn't leave own king in check)
-					if (!king_attacked(board, color_to_move)) {
-						nodes += perft(board, depth - 1, reverse_color(color_to_move));
-					}
+					nodes += perft(board, depth - 1, reverse_color(color_to_move));
 
 					// Undo the move
 					board[x][y] = moving_piece;
