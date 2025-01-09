@@ -24,7 +24,7 @@ x  ♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
 
 
 /*** definition ***/
-#define STARTING_FEN "rnb1kbnr/pppppppp/8/8/3q4/8/PP1PP1PP/R3K2R w KQkq - 0 1"
+#define STARTING_FEN "rnb1kbnr/pppppppp/8/8/4q3/8/P5PP/R3K2R w kq - 0 1"
 #define BOARD_SIZE 64
 #define ROW 8
 #define COL 8
@@ -53,7 +53,7 @@ struct Piece {
 
 /*** General Helper Functions ***/
 void clear_scr() {
-	printf("\e[1;1H\e[2J");
+	//printf("\e[1;1H\e[2J");
 }
 
 /*** Helper Functions ***/
@@ -518,31 +518,46 @@ void game(struct Piece board[ROW][COL]) {
 		if (board[x][y].type == king) {
 			if (x == pX && (color_to_move == white ? castling_white : castling_black)) {
 				int rook_row = color_to_move == white ? 7 : 0;
+				
+				struct Piece temp_board[ROW][COL];
+				memcpy(temp_board, board, sizeof(struct Piece) * ROW * COL);
 
 				if (pY == 2 && (color_to_move == white ? !is_rook1_white_moved : !is_rook1_black_moved)) {
 				    for (int w = y - 1; w >= pY; w--) {
+					move_piece(board, x, w+1, pX, w);
+
 					if (board[x][w].type != empty || king_attacked(board, color_to_move)) {
 					    printf("Castling failed: obstructed or under attack.\n");
+					    memcpy(board, temp_board, sizeof(struct Piece) * ROW * COL);
+
 					    break;
 					}
+
 					if (w == pY) {
-					    move_piece(board, x, y, pX, pY);
 					    move_piece(board, rook_row, 0, rook_row, 3);
 					    if (color_to_move == white) castling_white = false;
 					    else castling_black = false;
+
+					    color_to_move = reverse_color(color_to_move);
 					}
 				    }
 				} else if (pY == 6 && (color_to_move == white ? !is_rook2_white_moved : !is_rook2_black_moved)) {
 				    for (int w = y + 1; w <= pY; w++) {
+					move_piece(board, x, w-1, pX, w);
+
 					if (board[x][w].type != empty || king_attacked(board, color_to_move)) {
 					    printf("Castling failed: obstructed or under attack.\n");
+					    memcpy(board, temp_board, sizeof(struct Piece) * ROW * COL);
+
 					    break;
 					}
+
 					if (w == pY) {
-					    move_piece(board, x, y, pX, pY);
 					    move_piece(board, rook_row, 7, rook_row, 5);
 					    if (color_to_move == white) castling_white = false;
 					    else castling_black = false;
+
+					    color_to_move = reverse_color(color_to_move);
 					}
 				    }
 				} else {
