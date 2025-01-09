@@ -1,3 +1,5 @@
+/*** dependencies ***/
+#include <time.h>
 #include <term.h>
 #include <locale.h>
 #include <wchar.h>
@@ -24,7 +26,7 @@ x  ♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
 
 
 /*** definition ***/
-#define STARTING_FEN "rnb1kbnr/pppppppp/8/8/4q3/8/P5PP/R3K2R w kq - 0 1"
+#define STARTING_FEN "rnb1kbnr/pppppppp/8/8/4q3/8/PP1PPPPP/R2BKP1R w kq - 0 1"
 #define BOARD_SIZE 64
 #define ROW 8
 #define COL 8
@@ -401,7 +403,7 @@ bool check_move(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
 		case rook: return rook_rule(board, x, y, pX, pY);
 		case queen: return queen_rule(board, x, y, pX, pY);
 		case king: return king_rule(board, x, y, pX, pY);
-		case empty: printf("Cannot move an empty square \n"); return false;
+		case empty: return false;
 		default: return false;
 	}
 }
@@ -419,39 +421,53 @@ bool board_check_status(struct Piece board[ROW][COL], enum Color color_to_move) 
 }
 
 /*** perft ***/
-void perft(struct Piece board[ROW][COL]) {
-	int pos_searched = 0;
+unsigned long perft(struct Piece board[ROW][COL], int depth, enum Color color_to_move) {
+    if (depth == 0) {
+        return 1;    }
 
-	for (int x = 0; x < COL; x++) {
-		for (int y = 0; y < ROW; y++) {
-			enum Type type = board[x][y].type;
+    unsigned long nodes = 0;
 
-			if (type == empty) continue;
+    // Loop through all pieces of the current player
+    for (int x = 0; x < ROW; x++) {
+        for (int y = 0; y < COL; y++) {
+            if (board[x][y].color != color_to_move) continue;
 
-			for (int pX = 0; pX < COL; pX++) {
-				for (int pY = 0; pY < ROW; pY++) {
-					pos_searched++;
+            // Generate pseudo-legal moves for this piece
+            for (int pX = 0; pX < ROW; pX++) {
+                for (int pY = 0; pY < COL; pY++) {
+                    if (!check_move(board, x, y, pX, pY)) continue;
 
-					switch (type) {
-						case pawn: if(!pawn_rule(board, x, y, pX, pY)) continue; break;
-						case knight: if(!knight_rule(board, x, y, pX, pY)) continue; break;
-						case bishop: if(!bishop_rule(board, x, y, pX, pY)) continue; break;
-						case rook: if(!rook_rule(board, x, y, pX, pY)) continue; break;
-						case queen: if(!queen_rule(board, x, y, pX, pY)) continue; break;
-						case king: if(!king_rule(board, x, y, pX, pY)) continue; break;
-					}
+                    // Make the move
+                    struct Piece captured = board[pX][pY];
+                    move_piece(board, x, y, pX, pY);
 
-					if (board[x][y].color == board[pX][pY].color) continue;
+                    // Check legality (doesn't leave own king in check)
+                    if (!king_attacked(board, color_to_move)) {
+                        nodes += perft(board, depth - 1, reverse_color(color_to_move));
+                    }
 
-					char type_char = get_type_char(type);
+                    // Undo the move
+                    board[pX][pY] = captured;
+                    board[x][y] = board[pX][pY];
+                }
+            }
+        }
+    }
 
-					printf("%c | %c %d, %c %d \n", type_char, y + 'a', x + 1, pY + 'a', pX + 1);
-				}
-			}
-		}
-	}
+    return nodes;
+}
 
-	printf("\n Searched %d positions! \n\n", pos_searched);
+void test_perft(struct Piece board[ROW][COL], int depth, enum Color color_to_move) {
+	clock_t start_time = clock();
+
+	unsigned long nodes = perft(board, depth, color_to_move);
+
+	clock_t end_time = clock();
+
+	printf("Perft at depth %d: %lu nodes \n", depth, nodes);
+
+	double time_spent = (double)(end_time - start_time) / CLOCKS_PER_SEC;
+	printf("Time taken: %.3f seconds \n", time_spent);
 }
 
 /*** gameloop ***/
@@ -595,7 +611,7 @@ void game(struct Piece board[ROW][COL]) {
 
 		printf("\n");
 		
-		//perft(board);
+		test_perft(board, 1, color_to_move);
 	}
 	
 }
