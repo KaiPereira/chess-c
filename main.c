@@ -29,7 +29,7 @@ x  ♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
 
 
 /*** definition ***/
-#define STARTING_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w kq - 0 1"
+#define STARTING_FEN "rnbqkbnr/pppppppp/8/8/2BPPB2/2N2N2/PPP2PPP/R2QK2R b KQkq - 0 1"
 #define BOARD_SIZE 64
 #define ROW 8
 #define COL 8
@@ -478,7 +478,18 @@ unsigned long perft(struct Piece board[ROW][COL], int depth, enum Color color_to
 float evaluate(struct Piece board[ROW][COL]) {
 	for (int x = 0; x < ROW; x++) {
 		for (int y = 0; y < COL; y++) {
-			printf("%d", pawn_table[x][y]);
+			int position_value;
+
+			switch(board[x][y].type) {
+				case pawn: position_value += pawn_table[x][y]; break;
+				case knight: position_value += knight_table[x][y]; break;
+				case bishop: position_value += bishop_table[x][y]; break;
+				case rook: position_value += rook_table[x][y]; break;
+				case queen: position_value += queen_table[x][y]; break;
+				case king: position_value += king_table[x][y]; break;
+			};
+
+			printf("%d \n", position_value);
 		}
 	}
 
