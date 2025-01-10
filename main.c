@@ -476,20 +476,37 @@ unsigned long perft(struct Piece board[ROW][COL], int depth, enum Color color_to
 
 /*** evaluation ***/
 float evaluate(struct Piece board[ROW][COL]) {
+	int pawn_value = 100;
+	int knight_value = 300;
+
 	for (int x = 0; x < ROW; x++) {
 		for (int y = 0; y < COL; y++) {
 			int position_value;
+			int pieces_value;
 
-			switch(board[x][y].type) {
-				case pawn: position_value += pawn_table[x][y]; break;
-				case knight: position_value += knight_table[x][y]; break;
-				case bishop: position_value += bishop_table[x][y]; break;
-				case rook: position_value += rook_table[x][y]; break;
-				case queen: position_value += queen_table[x][y]; break;
-				case king: position_value += king_table[x][y]; break;
+			enum Type type = board[x][y].type;
+
+			switch(type) {
+				case pawn: 
+					position_value += pawn_table[x][y]; 
+					pieces_value += 100;
+					break;
+				case knight: 
+					position_value += knight_table[x][y]; {
+					break;
+				case bishop: 
+					position_value += bishop_table[x][y]; 
+					break;
+				case rook: 
+					position_value += rook_table[x][y]; 
+					break;
+				case queen: 
+					position_value += queen_table[x][y]; 
+					break;
+				case king: 
+					position_value += king_table[x][y]; 
+					break;
 			};
-
-			printf("%d \n", position_value);
 		}
 	}
 
