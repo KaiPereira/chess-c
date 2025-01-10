@@ -11,6 +11,9 @@
 #include <ctype.h>
 #include <stdio.h>
 
+/*** local dependencies ***/
+#include "positions.h"
+
 
 /***
    y y y y y y y y
@@ -473,7 +476,13 @@ unsigned long perft(struct Piece board[ROW][COL], int depth, enum Color color_to
 
 /*** evaluation ***/
 float evaluate(struct Piece board[ROW][COL]) {
+	for (int x = 0; x < ROW; x++) {
+		for (int y = 0; y < COL; y++) {
+			printf("%d", pawn_table[x][y]);
+		}
+	}
 
+	return 10.0;
 }
 
 
@@ -515,7 +524,9 @@ void game(struct Piece board[ROW][COL]) {
 	clear_scr();
 
 	while (true) {
-		test_perft(board, 5, color_to_move);
+		evaluate(board);
+
+		test_perft(board, 3, color_to_move);
 
 		print_board(board, color_to_move);
 
