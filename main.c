@@ -413,18 +413,26 @@ bool check_move(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
 }
 
 bool board_status(struct Piece board[ROW][COL], enum Color color_to_move, int x, int y, int pX, int pY) {
-	if (king_attacked(board, color_to_move)) return true;
+    if (king_attacked(board, color_to_move)) return true;
 
-	struct Piece temp_board[ROW][COL];
+    // Save the state of the affected squares
+    struct Piece original_piece = board[pX][pY];
+    struct Piece moved_piece = board[x][y];
 
-	memcpy(temp_board, board, sizeof(struct Piece) * ROW * COL);
+    // Perform the move
+    board[pX][pY] = moved_piece;
+    board[x][y].type = empty;
 
-	move_piece(temp_board, x, y, pX, pY);
-	
-	if (king_attacked(temp_board, color_to_move)) return true;
-	
-	return false;
+    bool attacked = king_attacked(board, color_to_move);
+
+    // Undo the move
+    board[x][y] = moved_piece;
+    board[pX][pY] = original_piece;
+
+    return attacked;
 }
+
+
 
 /*** perft ***/
 unsigned long perft(struct Piece board[ROW][COL], int depth, enum Color color_to_move) {
@@ -449,7 +457,7 @@ unsigned long perft(struct Piece board[ROW][COL], int depth, enum Color color_to
 
 					if (board[x][y].color == board[pX][pY].color) continue;
 
-					//if (board_status(board, color_to_move, x, y, pX, pY)) continue;
+					if (board_status(board, color_to_move, x, y, pX, pY)) continue;
 
 					// Save the pieces involved in the move
 					struct Piece moving_piece = board[x][y];
@@ -613,7 +621,7 @@ void game(struct Piece board[ROW][COL]) {
 		int eval = evaluate(board, color_to_move);
 		printf("%d \n", eval);
 
-		test_perft(board, 3, color_to_move);
+		test_perft(board, 5, color_to_move);
 
 		print_board(board, color_to_move);
 
