@@ -434,7 +434,7 @@ bool board_status(struct Piece board[ROW][COL], enum Color color_to_move, int x,
 
 /*** perft ***/
 unsigned long perft(struct Piece board[ROW][COL], int depth, enum Color color_to_move) {
-	if (depth == 0) {
+	if (!depth) {
 		return 1;    
 	}
 
@@ -481,8 +481,12 @@ unsigned long perft(struct Piece board[ROW][COL], int depth, enum Color color_to
 	return nodes;
 }
 
+void legal_moves(struct Piece board[ROW][COL]) {
+
+}
+
 /*** evaluation ***/
-int evaluate(struct Piece board[ROW][COL], enum Color color_to_move) {
+int evaluate(struct Piece board[ROW][COL]) {
 	int pawn_value = 100;
 	int knight_value = 300;
 	int bishop_value = 350;
@@ -577,8 +581,10 @@ int evaluate(struct Piece board[ROW][COL], enum Color color_to_move) {
 	return eval;
 }
 
-int negamax(struct Piece board[ROW][COL], int depth, enum Color color) {
-
+int negamax(struct Piece board[ROW][COL], int alpha, int beta, int depth, enum Color color) {
+	if (!depth) {
+		return evaluate(board);
+	}
 }
 
 void test_perft(struct Piece board[ROW][COL], int depth, enum Color color_to_move) {
@@ -619,10 +625,10 @@ void game(struct Piece board[ROW][COL]) {
 	clear_scr();
 
 	while (true) {
-		int eval = evaluate(board, color_to_move);
+		int eval = evaluate(board);
 		printf("%d \n", eval);
 
-		test_perft(board, 5, color_to_move);
+		test_perft(board, 4, color_to_move);
 
 		print_board(board, color_to_move);
 
