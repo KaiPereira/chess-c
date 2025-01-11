@@ -597,6 +597,8 @@ int negamax(struct Piece board[ROW][COL], int alpha, int beta, int depth, enum C
 
 	int best_value = INT_MIN;
 
+
+
 	// Legal move generator
 	// For efficiency purposes I put the legal moves general inside of the negamax functinon
 	for (int x = 0; x < ROW; x++) {
@@ -614,6 +616,7 @@ int negamax(struct Piece board[ROW][COL], int alpha, int beta, int depth, enum C
 
 					if (board_status(board, color_to_move, x, y, pX, pY)) continue;
 
+
 					// All legal moves
 					struct Piece temp_board[ROW][COL];
 
@@ -621,7 +624,9 @@ int negamax(struct Piece board[ROW][COL], int alpha, int beta, int depth, enum C
 
 					move_piece(temp_board, x, y, pX, pY);
 
-					int value = -negamax(board, 0, 0, depth - 1, reverse_color(color_to_move));
+					print_board(temp_board, white);
+
+					int value = -negamax(temp_board, 0, 0, depth - 1, reverse_color(color_to_move));
 
 					best_value = (value > best_value) ? value : best_value;
 
@@ -630,6 +635,7 @@ int negamax(struct Piece board[ROW][COL], int alpha, int beta, int depth, enum C
 					if (alpha >= beta) {
 						break;
 					}
+
 				}
 			}
 		}
