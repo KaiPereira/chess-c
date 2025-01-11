@@ -419,13 +419,11 @@ bool board_status(struct Piece board[ROW][COL], enum Color color_to_move, int x,
     struct Piece original_piece = board[pX][pY];
     struct Piece moved_piece = board[x][y];
 
-    // Perform the move
     board[pX][pY] = moved_piece;
     board[x][y].type = empty;
 
     bool attacked = king_attacked(board, color_to_move);
 
-    // Undo the move
     board[x][y] = moved_piece;
     board[pX][pY] = original_piece;
 
@@ -579,6 +577,9 @@ int evaluate(struct Piece board[ROW][COL], enum Color color_to_move) {
 	return eval;
 }
 
+int negamax(struct Piece board[ROW][COL], int depth, enum Color color) {
+
+}
 
 void test_perft(struct Piece board[ROW][COL], int depth, enum Color color_to_move) {
 	clock_t start_time = clock();
