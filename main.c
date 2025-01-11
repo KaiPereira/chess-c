@@ -29,7 +29,8 @@ x  ♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
 
 
 /*** definition ***/
-#define STARTING_FEN "rnbqkbnr/pppppppp/8/8/2BPPB2/2N2N2/PPP2PPP/R2QK2R b KQkq - 0 1"
+#define STARTING_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+// #define STARTING_FEN "rnbqkbnr/pppppppp/8/8/2BPPB2/2N2N2/PPP2PPP/R2QK2R b KQkq - 0 1"
 #define BOARD_SIZE 64
 #define ROW 8
 #define COL 8
@@ -475,42 +476,99 @@ unsigned long perft(struct Piece board[ROW][COL], int depth, enum Color color_to
 }
 
 /*** evaluation ***/
-float evaluate(struct Piece board[ROW][COL]) {
+int evaluate(struct Piece board[ROW][COL], enum Color color_to_move) {
 	int pawn_value = 100;
 	int knight_value = 300;
+	int bishop_value = 350;
+	int rook_value = 500;
+	int queen_value = 800;
+	int king_value = 100000;
+
+	int eval = 0;
 
 	for (int x = 0; x < ROW; x++) {
 		for (int y = 0; y < COL; y++) {
 			int position_value;
-			int pieces_value;
+			int type_value;
 
 			enum Type type = board[x][y].type;
+			enum Color color = board[x][y].color;
 
-			switch(type) {
-				case pawn: 
-					position_value += pawn_table[x][y]; 
-					pieces_value += 100;
-					break;
-				case knight: 
-					position_value += knight_table[x][y]; {
-					break;
-				case bishop: 
-					position_value += bishop_table[x][y]; 
-					break;
-				case rook: 
-					position_value += rook_table[x][y]; 
-					break;
-				case queen: 
-					position_value += queen_table[x][y]; 
-					break;
-				case king: 
-					position_value += king_table[x][y]; 
-					break;
-			};
+			if (type == empty) continue;
+
+			if (color == white) {
+				switch(type) {
+					case pawn: 
+						position_value = pawn_table_w[x][y]; 
+						type_value = pawn_value;
+						break;
+					case knight: 
+						position_value = knight_table_w[x][y]; 
+						type_value = knight_value;
+						break;
+					case bishop: 
+						position_value = bishop_table_w[x][y]; 
+						type_value = bishop_value;
+						break;
+					case rook: 
+						position_value = rook_table_w[x][y]; 
+						type_value = rook_value;
+						break;
+					case queen: 
+						position_value = queen_table_w[x][y]; 
+						type_value = queen_value;
+						break;
+					case king: 
+						position_value = king_table_w[x][y]; 
+						type_value = king_value;
+						break;
+					default:
+						break;
+				};
+
+				int piece_value = position_value + type_value;
+
+				eval += piece_value;
+			} else if (color == black) {
+				switch(type) {
+					case pawn: 
+						position_value = pawn_table_b[x][y]; 
+						type_value = pawn_value;
+						break;
+					case knight: 
+						position_value = knight_table_b[x][y]; 
+						type_value = knight_value;
+						break;
+					case bishop: 
+						position_value = bishop_table_b[x][y]; 
+						type_value = bishop_value;
+						break;
+					case rook: 
+						position_value = rook_table_b[x][y]; 
+						type_value = rook_value;
+						break;
+					case queen: 
+						position_value = queen_table_b[x][y]; 
+						type_value = queen_value;
+						break;
+					case king: 
+						position_value = king_table_b[x][y]; 
+						type_value = king_value;
+						break;
+					default:
+						break;
+				};
+
+				int piece_value = position_value + type_value;
+
+				printf("Val: %d %c \n", piece_value, get_type_char(type));
+
+				eval -= piece_value;
+			} else continue;
 		}
 	}
 
-	return 10.0;
+	return eval;
 }
 
 
@@ -552,7 +610,8 @@ void game(struct Piece board[ROW][COL]) {
 	clear_scr();
 
 	while (true) {
-		evaluate(board);
+		int eval = evaluate(board, color_to_move);
+		printf("%d \n", eval);
 
 		test_perft(board, 3, color_to_move);
 
