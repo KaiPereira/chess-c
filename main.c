@@ -481,8 +481,18 @@ unsigned long perft(struct Piece board[ROW][COL], int depth, enum Color color_to
 	return nodes;
 }
 
-void legal_moves(struct Piece board[ROW][COL]) {
 
+void test_perft(struct Piece board[ROW][COL], int depth, enum Color color_to_move) {
+	clock_t start_time = clock();
+
+	unsigned long nodes = perft(board, depth, color_to_move);
+
+	clock_t end_time = clock();
+
+	printf("Perft at depth %d: %lu nodes \n", depth, nodes);
+
+	double time_spent = (double)(end_time - start_time) / CLOCKS_PER_SEC;
+	printf("Time taken: %.3f seconds \n", time_spent);
 }
 
 /*** evaluation ***/
@@ -581,23 +591,33 @@ int evaluate(struct Piece board[ROW][COL]) {
 	return eval;
 }
 
-int negamax(struct Piece board[ROW][COL], int alpha, int beta, int depth, enum Color color) {
+int negamax(struct Piece board[ROW][COL], int alpha, int beta, int depth, enum Color color_to_move) {
 	if (!depth) {
 		return evaluate(board);
 	}
-}
 
-void test_perft(struct Piece board[ROW][COL], int depth, enum Color color_to_move) {
-	clock_t start_time = clock();
+	// Legal move generator
+	// For efficiency purposes I put the legal moves general inside of the negamax functinon
+	for (int x = 0; x < ROW; x++) {
+		for (int y = 0; y < COL; y++) {
+			if (board[x][y].color != color_to_move) continue;
 
-	unsigned long nodes = perft(board, depth, color_to_move);
+			// Generate pseudo-legal moves for this piece
+			for (int pX = 0; pX < ROW; pX++) {
+				for (int pY = 0; pY < COL; pY++) {
+					if (!check_move(board, x, y, pX, pY)) continue;
 
-	clock_t end_time = clock();
+					if (board[x][y].color != color_to_move) continue;
 
-	printf("Perft at depth %d: %lu nodes \n", depth, nodes);
+					if (board[x][y].color == board[pX][pY].color) continue;
 
-	double time_spent = (double)(end_time - start_time) / CLOCKS_PER_SEC;
-	printf("Time taken: %.3f seconds \n", time_spent);
+					if (board_status(board, color_to_move, x, y, pX, pY)) continue;
+
+					// All legal moves
+				}
+			}
+		}
+	}
 }
 
 /*** gameloop ***/
@@ -625,10 +645,11 @@ void game(struct Piece board[ROW][COL]) {
 	clear_scr();
 
 	while (true) {
-		int eval = evaluate(board);
-		printf("%d \n", eval);
+		negamax(board, 0, 0, 3, color_to_move);
+		//int eval = evaluate(board);
+		//printf("%d \n", eval);
 
-		test_perft(board, 4, color_to_move);
+		//test_perft(board, 4, color_to_move);
 
 		print_board(board, color_to_move);
 
