@@ -1,4 +1,5 @@
 /*** dependencies ***/
+#include <limits.h>
 #include <time.h>
 #include <term.h>
 #include <locale.h>
@@ -581,8 +582,6 @@ int evaluate(struct Piece board[ROW][COL]) {
 
 				int piece_value = position_value + type_value;
 
-				printf("Val: %d %c \n", piece_value, get_type_char(type));
-
 				eval -= piece_value;
 			} else continue;
 		}
@@ -595,6 +594,8 @@ int negamax(struct Piece board[ROW][COL], int alpha, int beta, int depth, enum C
 	if (!depth) {
 		return evaluate(board);
 	}
+
+	int best_value = INT_MIN;
 
 	// Legal move generator
 	// For efficiency purposes I put the legal moves general inside of the negamax functinon
@@ -614,10 +615,27 @@ int negamax(struct Piece board[ROW][COL], int alpha, int beta, int depth, enum C
 					if (board_status(board, color_to_move, x, y, pX, pY)) continue;
 
 					// All legal moves
+					struct Piece temp_board[ROW][COL];
+
+					memcpy(temp_board, board, sizeof(struct Piece) * ROW * COL);
+
+					move_piece(temp_board, x, y, pX, pY);
+
+					int value = -negamax(board, 0, 0, depth - 1, reverse_color(color_to_move));
+
+					best_value = (value > best_value) ? value : best_value;
+
+					alpha = (alpha > best_value) ? alpha : best_value;
+
+					if (alpha >= beta) {
+						break;
+					}
 				}
 			}
 		}
 	}
+
+	return best_value;
 }
 
 /*** gameloop ***/
@@ -626,7 +644,6 @@ void game(struct Piece board[ROW][COL]) {
 	int y;
 	int pX;
 	int pY;
-
 
 	// Check king castling
 	bool is_rook1_white_moved = false;
@@ -645,7 +662,9 @@ void game(struct Piece board[ROW][COL]) {
 	clear_scr();
 
 	while (true) {
-		negamax(board, 0, 0, 3, color_to_move);
+		int best_value = negamax(board, INT_MIN, INT_MAX, 2, color_to_move);
+
+		printf("BEST VALUE: %d", best_value);
 		//int eval = evaluate(board);
 		//printf("%d \n", eval);
 
