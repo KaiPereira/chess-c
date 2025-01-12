@@ -57,6 +57,11 @@ struct Piece {
 	enum Type type;
 };
 
+typedef struct {
+	int x, y;
+	int pX, pY;
+} Move;
+
 
 /*** General Helper Functions ***/
 void clear_scr() {
@@ -216,6 +221,7 @@ void set_board(char fen[], struct Piece board[ROW][COL]) {
 	}
 }
 
+// Turns number row/col into coordinates
 bool check_pos(const char *input, int *row, int *col) {
 	if (input[0] < 'a' || input[0] > 'h' || input[1] < '1' || input[1] > '8') return false;
 
@@ -244,6 +250,15 @@ enum Color reverse_color(enum Color color) {
 	} else if (color == black) {
 		return white;
 	}
+}
+
+Move create_move(int x, int y, int pX, int pY) {
+	Move move;
+	move.x = x;
+	move.y = y;
+	move.pX = pX;
+	move.pY = pY;
+	return move;
 }
 
 
@@ -793,7 +808,6 @@ void game(struct Piece board[ROW][COL]) {
 	}
 	
 }
-
 
 /*** mains ***/
 int main() {
