@@ -77,11 +77,11 @@ void set_piece(struct Piece board[ROW][COL], int row, int col, enum Color color,
 	board[row][col].type = type;
 }
 
-void move_piece(struct Piece board[ROW][COL], int from_row, int from_col, int to_row, int to_col) {
-	board[to_row][to_col] = board[from_row][from_col];
+void move_piece(struct Piece board[ROW][COL], struct Move move) {
+	board[move.pX][move.pY] = board[move.x][move.y];
 
-	board[from_row][from_col].type = empty;
-	board[from_row][from_col].color = none;
+	board[move.x][move.y].type = empty;
+	board[move.x][move.y].color = none;
 }	
 
 enum Type get_type_enum(char piece) {
@@ -224,6 +224,7 @@ void set_board(char fen[], struct Piece board[ROW][COL]) {
 	}
 }
 
+
 // Turns number row/col into coordinates
 bool check_pos(const char *input, int *row, int *col) {
 	if (input[0] < 'a' || input[0] > 'h' || input[1] < '1' || input[1] > '8') return false;
@@ -264,7 +265,7 @@ struct Move create_move(int x, int y, int pX, int pY) {
 
 	return move;
 }
-// 6, 0 to 4, 0
+
 void print_move(struct Move move) {
 	char row1 = 'a' + move.y;
 	char row2 = 'a' + move.pY;
@@ -457,20 +458,11 @@ bool board_status(struct Piece board[ROW][COL], enum Color color_to_move, int x,
     return attacked;
 }
 
+void legal_moves(struct Piece board[ROW][COL], struct Move moves[256], enum Color color_to_move) {
+	int moves_count = 0; 
 
-
-/*** perft ***/
-unsigned long perft(struct Piece board[ROW][COL], int depth, enum Color color_to_move) {
-	if (!depth) {
-		return 1;    
-	}
-
-	unsigned long nodes = 0;
-
-	// Loop through all pieces of the current player
 	for (int x = 0; x < ROW; x++) {
 		for (int y = 0; y < COL; y++) {
-
 			if (board[x][y].color != color_to_move) continue;
 
 			// Generate pseudo-legal moves for this piece
@@ -484,25 +476,44 @@ unsigned long perft(struct Piece board[ROW][COL], int depth, enum Color color_to
 
 					if (board_status(board, color_to_move, x, y, pX, pY)) continue;
 
-					// Save the pieces involved in the move
-					struct Piece moving_piece = board[x][y];
-					struct Piece captured_piece = board[pX][pY];
+					moves_count++;
 
-					char node_type = get_type_char(moving_piece.type);
-					//printf("%c, x: %d, y: %d \n", node_type, pX, pY); 
-
-					// Make the move
-					move_piece(board, x, y, pX, pY);
-
-					// Check legality (doesn't leave own king in check)
-					nodes += perft(board, depth - 1, reverse_color(color_to_move));
-
-					// Undo the move
-					board[x][y] = moving_piece;
-					board[pX][pY] = captured_piece;
+					moves[moves_count] = create_move(x, y, pX, pY);
 				}
 			}
 		}
+	}
+}
+
+/*** perft ***/
+unsigned long perft(struct Piece board[ROW][COL], int depth, enum Color color_to_move) {
+	if (!depth) {
+		return 1;    
+	}
+
+	unsigned long nodes = 0;
+
+	struct Move moves[256];
+	legal_moves(board, moves, color_to_move);
+
+	for (int i = 0; i < sizeof(moves); i++) {
+		struct Move move = moves[i];
+
+		// Save the pieces involved in the move
+		struct Piece moving_piece = board[move.x][move.y];
+		struct Piece captured_piece = board[move.pX][move.pY];
+
+		char node_type = get_type_char(moving_piece.type);
+
+		// Make the move
+		move_piece(board, moves[i]);
+
+		// Check legality (doesn't leave own king in check)
+		nodes += perft(board, depth - 1, reverse_color(color_to_move));
+
+		// Undo the move
+		board[move.x][move.y] = moving_piece;
+		board[move.pX][move.pY] = captured_piece;
 	}
 
 	return nodes;
@@ -616,34 +627,6 @@ int evaluate(struct Piece board[ROW][COL]) {
 	return eval;
 }
 
-void legal_moves(struct Piece board[ROW][COL], struct Move moves[256], enum Color color_to_move) {
-	int moves_count = 0; 
-
-	for (int x = 0; x < ROW; x++) {
-		for (int y = 0; y < COL; y++) {
-			if (board[x][y].color != color_to_move) continue;
-
-			// Generate pseudo-legal moves for this piece
-			for (int pX = 0; pX < ROW; pX++) {
-				for (int pY = 0; pY < COL; pY++) {
-					if (!check_move(board, x, y, pX, pY)) continue;
-
-					if (board[x][y].color != color_to_move) continue;
-
-					if (board[x][y].color == board[pX][pY].color) continue;
-
-					if (board_status(board, color_to_move, x, y, pX, pY)) continue;
-
-					moves_count++;
-
-					moves[moves_count] = create_move(x, y, pX, pY);
-
-					print_move(create_move(x, y, pX, pY));
-				}
-			}
-		}
-	}
-}
 
 int negamax(struct Piece board[ROW][COL], int alpha, int beta, int depth, enum Color color_to_move, struct Move *best_move) {
 	if (!depth) {
@@ -652,45 +635,26 @@ int negamax(struct Piece board[ROW][COL], int alpha, int beta, int depth, enum C
 
 	int best_value = INT_MIN;
 
-	// Legal move generator
-	// For efficiency purposes I put the legal moves general inside of the negamax functinon
-	for (int x = 0; x < ROW; x++) {
-		for (int y = 0; y < COL; y++) {
-			if (board[x][y].color != color_to_move) continue;
+	struct Move moves[256];
+	legal_moves(board, moves, color_to_move);
 
-			// Generate pseudo-legal moves for this piece
-			for (int pX = 0; pX < ROW; pX++) {
-				for (int pY = 0; pY < COL; pY++) {
-					if (!check_move(board, x, y, pX, pY)) continue;
+	for (int i = 0; i < sizeof(moves); i++) {
+		struct Piece temp_board[ROW][COL];
 
-					if (board[x][y].color != color_to_move) continue;
+		memcpy(temp_board, board, sizeof(struct Piece) * ROW * COL);
 
-					if (board[x][y].color == board[pX][pY].color) continue;
+		move_piece(temp_board, moves[i]);
 
-					if (board_status(board, color_to_move, x, y, pX, pY)) continue;
+		print_board(temp_board, white);
 
+		int value = -negamax(temp_board, -alpha, -beta, depth - 1, reverse_color(color_to_move), NULL);
 
-					// All legal moves
-					struct Piece temp_board[ROW][COL];
+		best_value = (value > best_value) ? value : best_value;
 
-					memcpy(temp_board, board, sizeof(struct Piece) * ROW * COL);
+		alpha = (value > alpha) ? value : alpha;
 
-					move_piece(temp_board, x, y, pX, pY);
-
-					print_board(temp_board, white);
-
-					int value = -negamax(temp_board, -alpha, -beta, depth - 1, reverse_color(color_to_move), NULL);
-
-					best_value = (value > best_value) ? value : best_value;
-
-					alpha = (value > alpha) ? value : alpha;
-
-					if (alpha >= beta) {
-						break;
-					}
-
-				}
-			}
+		if (alpha >= beta) {
+			break;
 		}
 	}
 
@@ -733,8 +697,6 @@ void game(struct Piece board[ROW][COL]) {
 
 
 
-		struct Move moves[256];
-		legal_moves(board, moves, color_to_move);
 
 
 		print_board(board, color_to_move);
@@ -782,7 +744,7 @@ void game(struct Piece board[ROW][COL]) {
 
 				if (pY == 2 && (color_to_move == white ? !is_rook1_white_moved : !is_rook1_black_moved)) {
 				    for (int w = y - 1; w >= pY; w--) {
-					move_piece(board, x, w+1, pX, w);
+					move_piece(board, create_move(x, w+1, pX, w));
 
 					if (board[x][w].type != empty || king_attacked(board, color_to_move)) {
 					    printf("Castling failed: obstructed or under attack.\n");
@@ -792,7 +754,7 @@ void game(struct Piece board[ROW][COL]) {
 					}
 
 					if (w == pY) {
-					    move_piece(board, rook_row, 0, rook_row, 3);
+					    move_piece(board, create_move(rook_row, 0, rook_row, 3));
 					    if (color_to_move == white) castling_white = false;
 					    else castling_black = false;
 
@@ -801,7 +763,7 @@ void game(struct Piece board[ROW][COL]) {
 				    }
 				} else if (pY == 6 && (color_to_move == white ? !is_rook2_white_moved : !is_rook2_black_moved)) {
 				    for (int w = y + 1; w <= pY; w++) {
-					move_piece(board, x, w-1, pX, w);
+					move_piece(board, create_move(x, w-1, pX, w));
 
 					if (board[x][w].type != empty || king_attacked(board, color_to_move)) {
 					    printf("Castling failed: obstructed or under attack.\n");
@@ -811,7 +773,7 @@ void game(struct Piece board[ROW][COL]) {
 					}
 
 					if (w == pY) {
-					    move_piece(board, rook_row, 7, rook_row, 5);
+					    move_piece(board, create_move(rook_row, 7, rook_row, 5));
 					    if (color_to_move == white) castling_white = false;
 					    else castling_black = false;
 
@@ -831,7 +793,7 @@ void game(struct Piece board[ROW][COL]) {
 				continue;
 			}
 
-			move_piece(board, x, y, pX, pY);
+			move_piece(board, create_move(x, y, pX, pY));
 
 			// Change castling rights
 			if (color_to_move == white) {
