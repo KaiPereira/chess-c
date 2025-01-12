@@ -273,7 +273,6 @@ void print_move(struct Move move) {
 	printf("Move: %c%d to %c%d \n", row1, 8 - move.x, row2, 8 - move.pX);
 }
 
-
 /*** movegen ***/
 /*** pseudolegality thanks to https://github.com/JDSherbert for some movegen logic ***/
 // en passant is stupid :/
@@ -495,7 +494,7 @@ bool board_status(struct Piece board[ROW][COL], enum Color color_to_move, struct
 	return attacked;
 }
 
-void legal_moves(struct Piece board[ROW][COL], struct Move moves[256], enum Color color_to_move) {
+int legal_moves(struct Piece board[ROW][COL], struct Move moves[256], enum Color color_to_move) {
 	int moves_count = 0; 
 
 	for (int x = 0; x < ROW; x++) {
@@ -522,6 +521,8 @@ void legal_moves(struct Piece board[ROW][COL], struct Move moves[256], enum Colo
 			}
 		}
 	}
+
+	return moves_count;
 }
 
 /*** perft ***/
@@ -535,7 +536,7 @@ unsigned long perft(struct Piece board[ROW][COL], int depth, enum Color color_to
 	struct Move moves[256];
 	legal_moves(board, moves, color_to_move);
 
-	for (int i = 0; i < sizeof(moves); i++) {
+	for (int i = 0; i < sizeof(moves) / sizeof(moves[0]); i++) {
 		struct Move move = moves[i];
 
 		// Save the pieces involved in the move
@@ -675,26 +676,33 @@ int negamax(struct Piece board[ROW][COL], int alpha, int beta, int depth, enum C
 	int best_value = INT_MIN;
 
 	struct Move moves[256];
-	legal_moves(board, moves, color_to_move);
+	int moves_count = legal_moves(board, moves, color_to_move);
 
-	for (int i = 0; i < sizeof(moves); i++) {
+	for (int i = 0; i < moves_count; i++) {
 		struct Piece temp_board[ROW][COL];
 
 		memcpy(temp_board, board, sizeof(struct Piece) * ROW * COL);
 
-		move_piece(temp_board, moves[i]);
+		printf("Looping %d \n", moves[i].y);
 
-		print_board(temp_board, white);
+		//move_piece(temp_board, moves[i]);
+
+		/*print_board(temp_board, white);
 
 		int value = -negamax(temp_board, -alpha, -beta, depth - 1, reverse_color(color_to_move), NULL);
 
-		best_value = (value > best_value) ? value : best_value;
+		if (value > best_value) {
+			best_value = value;
+			if (best_move != NULL) {
+				*best_move = moves[i]; // Update the best move
+			}
+		}
 
 		alpha = (value > alpha) ? value : alpha;
 
 		if (alpha >= beta) {
 			break;
-		}
+		}*/
 	}
 
 	return best_value;
@@ -724,11 +732,12 @@ void game(struct Piece board[ROW][COL]) {
 	clear_scr();
 
 	while (true) {
-		/*struct Move best_move;
+		struct Move best_move;
 
 		int best_value = negamax(board, INT_MIN, INT_MAX, 2, color_to_move, &best_move);
 
-		printf("BEST VALUE: %d", best_value); */
+		//printf("BEST VALUE: %d", best_value);
+
 		//int eval = evaluate(board);
 		//printf("%d \n", eval);
 
