@@ -277,7 +277,12 @@ void print_move(struct Move move) {
 /*** movegen ***/
 /*** pseudolegality thanks to https://github.com/JDSherbert for some movegen logic ***/
 // en passant is stupid :/
-bool pawn_rule(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
+bool pawn_rule(struct Piece board[ROW][COL], struct Move move) {
+	int x = move.x;
+	int y = move.y;
+	int pX = move.pX;
+	int pY = move.pY;
+
 	if (x < 0 || x >= ROW || y < 0 || y >= COL || pX < 0 || pX >= ROW || pY < 0 || pY >= COL) {
 		return false;
 	}
@@ -301,13 +306,23 @@ bool pawn_rule(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
 }
 
 
-bool knight_rule(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
+bool knight_rule(struct Piece board[ROW][COL], struct Move move) {
+	int x = move.x;
+	int y = move.y;
+	int pX = move.pX;
+	int pY = move.pY;
+
 	if ((abs(x - pX) == 2) && (abs(y - pY) == 1) || (abs(x - pX) == 1) && (abs(x - pY) == 2)) return true;
 
 	else return false;
 }
 
-bool bishop_rule(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
+bool bishop_rule(struct Piece board[ROW][COL], struct Move move) {
+	int x = move.x;
+	int y = move.y;
+	int pX = move.pX;
+	int pY = move.pY;
+
 	if (abs(y - pY) != abs(x - pX)) return false;
 
 	int dx = (pX > x) ? 1 : -1;
@@ -328,7 +343,12 @@ bool bishop_rule(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
 	return true;
 }
 
-bool rook_rule(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
+bool rook_rule(struct Piece board[ROW][COL], struct Move move) {
+	int x = move.x;
+	int y = move.y;
+	int pX = move.pX;
+	int pY = move.pY;
+
 	if (y == pY || x == pX) {
 		int dx = (x == pX) ? 0 : ((pX > x) ? 1 : -1);
                 int dy = (y == pY) ? 0 : ((pY > y) ? 1 : -1);
@@ -348,7 +368,12 @@ bool rook_rule(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
 	} else return false;
 }
 
-bool queen_rule(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
+bool queen_rule(struct Piece board[ROW][COL], struct Move move) {
+	int x = move.x;
+	int y = move.y;
+	int pX = move.pX;
+	int pY = move.pY;
+
 	if (y == pY || x == pX) {
 		int dx = (x == pX) ? 0 : ((pX > x) ? 1 : -1);
                 int dy = (y == pY) ? 0 : ((pY > y) ? 1 : -1);
@@ -386,7 +411,12 @@ bool queen_rule(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
 	return true;
 }
 
-bool king_rule(struct Piece board[ROW][COL], int x, int y, int pX, int pY) { 
+bool king_rule(struct Piece board[ROW][COL], struct Move move) { 
+	int x = move.x;
+	int y = move.y;
+	int pX = move.pX;
+	int pY = move.pY;
+
 	if (abs(x - pX) <= 1 && abs(y - pY) <= 1) return true;
 	else return false;
 }
@@ -409,12 +439,14 @@ bool king_attacked(struct Piece board[ROW][COL], enum Color king_color) {
 			if (type == empty) continue;
 			if (color == king_color) continue;
 
+			struct Move move = create_move(r, c, x, y);
+
 			switch(type) {
-				case pawn: isAttacked = pawn_rule(board, r, c, x, y); break;
-				case knight: isAttacked = knight_rule(board, r, c, x, y); break;
-				case bishop: isAttacked = bishop_rule(board, r, c, x, y); break;
-				case rook: isAttacked = rook_rule(board, r, c, x, y); break;
-				case queen: isAttacked = queen_rule(board, r, c, x, y); break;
+				case pawn: isAttacked = pawn_rule(board, move); break;
+				case knight: isAttacked = knight_rule(board, move); break;
+				case bishop: isAttacked = bishop_rule(board, move); break;
+				case rook: isAttacked = rook_rule(board, move); break;
+				case queen: isAttacked = queen_rule(board, move); break;
 			}
 	
 			if (isAttacked) return true;
@@ -425,37 +457,42 @@ bool king_attacked(struct Piece board[ROW][COL], enum Color king_color) {
 }
 
 /*** final move gen ***/
-bool check_move(struct Piece board[ROW][COL], int x, int y, int pX, int pY) {
-	enum Type type = board[x][y].type;
+bool check_move(struct Piece board[ROW][COL], struct Move move) {
+	enum Type type = board[move.x][move.y].type;
 
 	switch(type) {
-		case pawn: return pawn_rule(board, x, y, pX, pY);
-		case knight: return knight_rule(board, x, y, pX, pY);
-		case bishop: return bishop_rule(board, x, y, pX, pY);
-		case rook: return rook_rule(board, x, y, pX, pY);
-		case queen: return queen_rule(board, x, y, pX, pY);
-		case king: return king_rule(board, x, y, pX, pY);
+		case pawn: return pawn_rule(board, move);
+		case knight: return knight_rule(board, move);
+		case bishop: return bishop_rule(board, move);
+		case rook: return rook_rule(board, move);
+		case queen: return queen_rule(board, move);
+		case king: return king_rule(board, move);
 		case empty: return false;
 		default: return false;
 	}
 }
 
-bool board_status(struct Piece board[ROW][COL], enum Color color_to_move, int x, int y, int pX, int pY) {
-    if (king_attacked(board, color_to_move)) return true;
+bool board_status(struct Piece board[ROW][COL], enum Color color_to_move, struct Move move) {
+	int x = move.x;
+	int y = move.y;
+	int pX = move.pX;
+	int pY = move.pY;
 
-    // Save the state of the affected squares
-    struct Piece original_piece = board[pX][pY];
-    struct Piece moved_piece = board[x][y];
+	if (king_attacked(board, color_to_move)) return true;
 
-    board[pX][pY] = moved_piece;
-    board[x][y].type = empty;
+	// Save the state of the affected squares
+	struct Piece original_piece = board[pX][pY];
+	struct Piece moved_piece = board[x][y];
 
-    bool attacked = king_attacked(board, color_to_move);
+	board[pX][pY] = moved_piece;
+	board[x][y].type = empty;
 
-    board[x][y] = moved_piece;
-    board[pX][pY] = original_piece;
+	bool attacked = king_attacked(board, color_to_move);
 
-    return attacked;
+	board[x][y] = moved_piece;
+	board[pX][pY] = original_piece;
+
+	return attacked;
 }
 
 void legal_moves(struct Piece board[ROW][COL], struct Move moves[256], enum Color color_to_move) {
@@ -468,17 +505,19 @@ void legal_moves(struct Piece board[ROW][COL], struct Move moves[256], enum Colo
 			// Generate pseudo-legal moves for this piece
 			for (int pX = 0; pX < ROW; pX++) {
 				for (int pY = 0; pY < COL; pY++) {
-					if (!check_move(board, x, y, pX, pY)) continue;
+					struct Move move = create_move(x, y, pX, pY);
+
+					if (!check_move(board, move)) continue;
 
 					if (board[x][y].color != color_to_move) continue;
 
 					if (board[x][y].color == board[pX][pY].color) continue;
 
-					if (board_status(board, color_to_move, x, y, pX, pY)) continue;
+					if (board_status(board, color_to_move, move)) continue;
 
 					moves_count++;
 
-					moves[moves_count] = create_move(x, y, pX, pY);
+					moves[moves_count] = move;
 				}
 			}
 		}
@@ -724,6 +763,10 @@ void game(struct Piece board[ROW][COL]) {
 
 		clear_scr();
 
+
+		// Create a move and check it
+		struct Move move = create_move(x, y, pX, pY);
+
 		if (board[x][y].color != color_to_move) {
 			printf("Wrong color to move \n");
 			continue;
@@ -787,13 +830,13 @@ void game(struct Piece board[ROW][COL]) {
 		}
 
 
-		if (check_move(board, x, y, pX, pY)) {
-			if (board_status(board, color_to_move, x, y, pX, pY)) {
+		if (check_move(board, move)) {
+			if (board_status(board, color_to_move, move)) {
 				printf("You're in check or moving into it. \n");
 				continue;
 			}
 
-			move_piece(board, create_move(x, y, pX, pY));
+			move_piece(board, move);
 
 			// Change castling rights
 			if (color_to_move == white) {
