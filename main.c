@@ -57,10 +57,10 @@ struct Piece {
 	enum Type type;
 };
 
-typedef struct {
+struct Move {
 	int x, y;
 	int pX, pY;
-} Move;
+};
 
 
 /*** General Helper Functions ***/
@@ -252,12 +252,13 @@ enum Color reverse_color(enum Color color) {
 	}
 }
 
-Move create_move(int x, int y, int pX, int pY) {
-	Move move;
+struct Move create_move(int x, int y, int pX, int pY) {
+	struct Move move;
 	move.x = x;
 	move.y = y;
 	move.pX = pX;
 	move.pY = pY;
+
 	return move;
 }
 
@@ -605,14 +606,12 @@ int evaluate(struct Piece board[ROW][COL]) {
 	return eval;
 }
 
-int negamax(struct Piece board[ROW][COL], int alpha, int beta, int depth, enum Color color_to_move) {
+int negamax(struct Piece board[ROW][COL], int alpha, int beta, int depth, enum Color color_to_move, struct Move *best_move) {
 	if (!depth) {
 		return evaluate(board);
 	}
 
 	int best_value = INT_MIN;
-
-
 
 	// Legal move generator
 	// For efficiency purposes I put the legal moves general inside of the negamax functinon
@@ -641,7 +640,7 @@ int negamax(struct Piece board[ROW][COL], int alpha, int beta, int depth, enum C
 
 					print_board(temp_board, white);
 
-					int value = -negamax(temp_board, 0, 0, depth - 1, reverse_color(color_to_move));
+					int value = -negamax(temp_board, 0, 0, depth - 1, reverse_color(color_to_move), NULL);
 
 					best_value = (value > best_value) ? value : best_value;
 
@@ -683,7 +682,9 @@ void game(struct Piece board[ROW][COL]) {
 	clear_scr();
 
 	while (true) {
-		int best_value = negamax(board, INT_MIN, INT_MAX, 2, color_to_move);
+		struct Move best_move;
+
+		int best_value = negamax(board, INT_MIN, INT_MAX, 2, color_to_move, &best_move);
 
 		printf("BEST VALUE: %d", best_value);
 		//int eval = evaluate(board);
