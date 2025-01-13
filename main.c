@@ -90,13 +90,6 @@ void set_piece(struct Piece board[ROW][COL], int row, int col, enum Color color,
 	board[row][col].type = type;
 }
 
-void move_piece(struct Piece board[ROW][COL], struct Move move) {
-	board[move.pX][move.pY] = board[move.x][move.y];
-
-	board[move.x][move.y].type = empty;
-	board[move.x][move.y].color = none;
-}	
-
 enum Type get_type_enum(char piece) {
 	switch(tolower(piece)) {
 		case 'p': return pawn;
@@ -302,6 +295,19 @@ void castle(struct Piece board[ROW][COL], struct Move move) {
 	}
 }
 
+void move_piece(struct Piece board[ROW][COL], struct Move move) {
+	enum Type type = board[move.x][move.y];
+
+	if (type == king && castle_rights(board, move)) {
+		castle(board, move);
+		return;
+	}
+
+	board[move.pX][move.pY] = board[move.x][move.y];
+
+	board[move.x][move.y].type = empty;
+	board[move.x][move.y].color = none;
+}
 
 /*** movegen ***/
 /*** pseudolegality thanks to https://github.com/JDSherbert for some movegen logic ***/
@@ -835,12 +841,22 @@ void game(struct Piece board[ROW][COL]) {
 
 		int best_value = negamax(board, INT_MIN, INT_MAX, 2, color_to_move, &best_move);
 
-		struct Move moves[256];
+		move_piece(board, best_move);
+
+		print_board(board);
+
+		sleep(2);
+
+		color_to_move = reverse_color(color_to_move);
+
+		continue;
+
+		/*struct Move moves[256];
 		int moves_count = legal_moves(board, moves, color_to_move);
 
 		for (int i = 0; i < moves_count; i++) {
 			print_move(moves[i]);
-		}
+		}*/
 
 
 
