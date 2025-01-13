@@ -519,11 +519,11 @@ bool castle_rights(
 	if (type == king && x == pX && y == 4) {
 		if (color == white) {
 			if (castle_w) {
-				if (pY == 2 && !rook1_w_moved) {
+				if (pY == 2 && !rook2_w_moved) {
 					for (int x = 4; x >= 2; x--) {
 						if (board[7][x - 1].type == empty && !square_attacked(board, 7, x)) valid = true;
 					}
-				} else if (pY == 6 && !rook2_w_moved) {
+				} else if (pY == 6 && !rook1_w_moved) {
 					for (int x = 4; x <= 6; x++) {
 						if (board[7][x + 1].type == empty && !square_attacked(board, 7, x)) valid = true;
 					}
@@ -531,11 +531,11 @@ bool castle_rights(
 			}
 		} else if (color == black) {
 			if (castle_b) {
-				if (pY == 2 && !rook1_b_moved) {
+				if (pY == 2 && !rook2_b_moved) {
 					for (int x = 4; x >= 2; x--) {
 						if (board[0][x - 1].type == empty && !square_attacked(board, 0, x)) valid = true;
 					}
-				} else if (pY == 6 && !rook2_b_moved) {
+				} else if (pY == 6 && !rook1_b_moved) {
 					for (int x = 4; x <= 6; x++) {
 						if (board[0][x + 1].type == empty && !square_attacked(board, 0, x)) valid = true;
 					}
@@ -609,6 +609,14 @@ int legal_moves(struct Piece board[ROW][COL], struct Move moves[256], enum Color
 			for (int pX = 0; pX < ROW; pX++) {
 				for (int pY = 0; pY < COL; pY++) {
 					struct Move move = create_move(x, y, pX, pY);
+
+					if (castle_rights(board, move)) {
+						moves[moves_count] = move;
+
+						moves_count++;
+
+						continue;
+					}
 
 					if (!check_move(board, move)) continue;
 
@@ -826,6 +834,15 @@ void game(struct Piece board[ROW][COL]) {
 		struct Move best_move;
 
 		int best_value = negamax(board, INT_MIN, INT_MAX, 2, color_to_move, &best_move);
+
+		struct Move moves[256];
+		int moves_count = legal_moves(board, moves, color_to_move);
+
+		for (int i = 0; i < moves_count; i++) {
+			print_move(moves[i]);
+		}
+
+
 
 		print_board(board);
 
