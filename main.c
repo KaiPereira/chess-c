@@ -516,7 +516,6 @@ bool castle_rights(
 
 	bool valid = false;
 
-	// All these valids = false are stupid, I have to refactor it
 	if (type == king && x == pX && y == 4) {
 		if (color == white) {
 			if (castle_w) {
