@@ -225,6 +225,7 @@ void set_board(char fen[], struct Piece board[ROW][COL]) {
 }
 
 
+
 // Turns number row/col into coordinates
 bool check_pos(const char *input, int *row, int *col) {
 	if (input[0] < 'a' || input[0] > 'h' || input[1] < '1' || input[1] > '8') return false;
@@ -421,7 +422,7 @@ bool king_rule(struct Piece board[ROW][COL], struct Move move) {
 }
 
 
-/*** chess/pins ***/
+/*** chess/pins/attacks ***/
 bool king_attacked(struct Piece board[ROW][COL], enum Color king_color) {
 	
 	int x, y;
@@ -433,7 +434,7 @@ bool king_attacked(struct Piece board[ROW][COL], enum Color king_color) {
 			enum Type type = board[r][c].type;
 			char color = board[r][c].color;
 
-			bool isAttacked = false;
+			bool is_attacked = false;
 
 			if (type == empty) continue;
 			if (color == king_color) continue;
@@ -441,19 +442,47 @@ bool king_attacked(struct Piece board[ROW][COL], enum Color king_color) {
 			struct Move move = create_move(r, c, x, y);
 
 			switch(type) {
-				case pawn: isAttacked = pawn_rule(board, move); break;
-				case knight: isAttacked = knight_rule(board, move); break;
-				case bishop: isAttacked = bishop_rule(board, move); break;
-				case rook: isAttacked = rook_rule(board, move); break;
-				case queen: isAttacked = queen_rule(board, move); break;
+				case pawn: is_attacked = pawn_rule(board, move); break;
+				case knight: is_attacked = knight_rule(board, move); break;
+				case bishop: is_attacked = bishop_rule(board, move); break;
+				case rook: is_attacked = rook_rule(board, move); break;
+				case queen: is_attacked = queen_rule(board, move); break;
 			}
 	
-			if (isAttacked) return true;
+			if (is_attacked) return true;
 		}
 	}
 
 	return false;
 }
+
+bool square_attacked(struct Piece board[ROW][COL], int pX, int pY, enum Color color_to_move) {
+	for (int x = 0; x < ROW; x++) {
+		for (int y = 0; y < COL; y++) {
+			enum Color color = board[x][y].color;
+			enum Type type = board[x][y].type;
+
+			if (color == none || color == color_to_move) continue;
+
+			struct Move move = create_move(x, y, pX, pY);
+
+			bool is_attacked = false;
+
+			switch(type) {
+                                 case pawn: is_attacked = pawn_rule(board, move); break;
+                                 case knight: is_attacked = knight_rule(board, move); break;
+                                 case bishop: is_attacked = bishop_rule(board, move); break;
+                                 case rook: is_attacked = rook_rule(board, move); break;
+                                 case queen: is_attacked = queen_rule(board, move); break;
+                         }
+         
+                         if (is_attacked) return true;
+		}
+	}
+
+	return false;
+}
+
 
 /*** final move gen ***/
 bool check_move(struct Piece board[ROW][COL], struct Move move) {
@@ -706,6 +735,46 @@ int negamax(struct Piece board[ROW][COL], int alpha, int beta, int depth, enum C
 	return best_value;
 }
 
+bool castle_rights(
+		struct Piece board[ROW][COL], 
+		//enum Color color_to_move,
+		bool castle_w,
+		bool castle_b,
+		bool rook1_w_moved,
+		bool rook2_w_moved,
+		bool rook1_b_moved,
+		bool rook2_b_moved,
+		struct Move move
+) {
+	int x = move.x;
+	int y = move.y;
+	int pX = move.pX;
+	int pY = move.pY;
+
+	enum Color color = board[x][y].color;
+	enum Type type = board[x][y].type;
+
+	if (type == king && x == pX) {
+		if (color == white) {
+			if (castle_w) {
+				if (pY == 2 && !rook1_w_moved) {
+
+				} else if (pY == 6 && !rook2_w_moved) {
+
+				}
+			}
+		} else if (color == black) {
+			if (castle_b) {
+				if (pY == 2 && !rook1_b_moved) {
+
+				} else if (pY == 6 && !rook2_b_moved) {
+
+				}
+			}
+		}
+	}
+}
+
 /*** gameloop ***/
 void game(struct Piece board[ROW][COL]) {
 	int x;
@@ -776,58 +845,11 @@ void game(struct Piece board[ROW][COL]) {
 			continue;
 		}
 
+
+		// Can castle
+		// Castle function
+
 		// castling shenanigans
-		if (board[x][y].type == king) {
-			if (x == pX && (color_to_move == white ? castling_white : castling_black)) {
-				int rook_row = color_to_move == white ? 7 : 0;
-				
-				struct Piece temp_board[ROW][COL];
-				memcpy(temp_board, board, sizeof(struct Piece) * ROW * COL);
-
-				if (pY == 2 && (color_to_move == white ? !is_rook1_white_moved : !is_rook1_black_moved)) {
-				    for (int w = y - 1; w >= pY; w--) {
-					move_piece(board, create_move(x, w+1, pX, w));
-
-					if (board[x][w].type != empty || king_attacked(board, color_to_move)) {
-					    printf("Castling failed: obstructed or under attack.\n");
-					    memcpy(board, temp_board, sizeof(struct Piece) * ROW * COL);
-
-					    break;
-					}
-
-					if (w == pY) {
-					    move_piece(board, create_move(rook_row, 0, rook_row, 3));
-					    if (color_to_move == white) castling_white = false;
-					    else castling_black = false;
-
-					    color_to_move = reverse_color(color_to_move);
-					}
-				    }
-				} else if (pY == 6 && (color_to_move == white ? !is_rook2_white_moved : !is_rook2_black_moved)) {
-				    for (int w = y + 1; w <= pY; w++) {
-					move_piece(board, create_move(x, w-1, pX, w));
-
-					if (board[x][w].type != empty || king_attacked(board, color_to_move)) {
-					    printf("Castling failed: obstructed or under attack.\n");
-					    memcpy(board, temp_board, sizeof(struct Piece) * ROW * COL);
-
-					    break;
-					}
-
-					if (w == pY) {
-					    move_piece(board, create_move(rook_row, 7, rook_row, 5));
-					    if (color_to_move == white) castling_white = false;
-					    else castling_black = false;
-
-					    color_to_move = reverse_color(color_to_move);
-					}
-				    }
-				} else {
-				    printf("Invalid castling move.\n");
-				}
-			}
-		}
-
 
 		if (check_move(board, move)) {
 			if (board_status(board, color_to_move, move)) {
