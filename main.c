@@ -33,8 +33,8 @@ x  ♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
 
 
 /*** definition ***/
-#define STARTING_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-// #define STARTING_FEN "rnbqkbnr/pppppppp/8/8/2BPPB2/2N2N2/PPP2PPP/R2QK2R b KQkq - 0 1"
+//#define STARTING_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+#define STARTING_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1"
 #define BOARD_SIZE 64
 #define ROW 8
 #define COL 8
@@ -64,6 +64,19 @@ struct Move {
 	int x, y;
 	int pX, pY;
 };
+
+
+/*** Global variables ***/
+bool rook1_w_moved = false;
+bool rook2_w_moved = false;
+bool castle_w = true;
+
+bool rook1_b_moved = false;
+bool rook2_b_moved = false;
+bool castle_b = true;
+
+enum Color computer_color = white;
+enum Color color_to_move = white;
 
 
 /*** General Helper Functions ***/
@@ -143,10 +156,10 @@ char get_color_char(enum Color color) {
 	}
 }
 
-void print_board(struct Piece board[COL][ROW], enum Color color) {
+void print_board(struct Piece board[COL][ROW]) {
 	printf("\n");
 
-	bool isWhite = (color == white);
+	bool isWhite = (color_to_move == white);
 
 	// an extra row for letters
 	// goofy ah for loop, how do u make this stuff readable and simple :/
@@ -423,11 +436,11 @@ bool king_rule(struct Piece board[ROW][COL], struct Move move) {
 
 
 /*** chess/pins/attacks ***/
-bool king_attacked(struct Piece board[ROW][COL], enum Color king_color) {
+bool king_attacked(struct Piece board[ROW][COL]) {
 	
 	int x, y;
 
-	find_piece(board, king_color, &x, &y);
+	find_piece(board, color_to_move, &x, &y);
 
 	for (int r = 0; r < ROW; r++) {
 		for (int c = 0; c < COL; c++) {
@@ -437,7 +450,7 @@ bool king_attacked(struct Piece board[ROW][COL], enum Color king_color) {
 			bool is_attacked = false;
 
 			if (type == empty) continue;
-			if (color == king_color) continue;
+			if (color == color_to_move) continue;
 
 			struct Move move = create_move(r, c, x, y);
 
@@ -456,7 +469,7 @@ bool king_attacked(struct Piece board[ROW][COL], enum Color king_color) {
 	return false;
 }
 
-bool square_attacked(struct Piece board[ROW][COL], int pX, int pY, enum Color color_to_move) {
+bool square_attacked(struct Piece board[ROW][COL], int pX, int pY) {
 	for (int x = 0; x < ROW; x++) {
 		for (int y = 0; y < COL; y++) {
 			enum Color color = board[x][y].color;
@@ -500,13 +513,13 @@ bool check_move(struct Piece board[ROW][COL], struct Move move) {
 	}
 }
 
-bool board_status(struct Piece board[ROW][COL], enum Color color_to_move, struct Move move) {
+bool board_status(struct Piece board[ROW][COL], struct Move move) {
 	int x = move.x;
 	int y = move.y;
 	int pX = move.pX;
 	int pY = move.pY;
 
-	if (king_attacked(board, color_to_move)) return true;
+	if (king_attacked(board)) return true;
 
 	// Save the state of the affected squares
 	struct Piece original_piece = board[pX][pY];
@@ -515,7 +528,7 @@ bool board_status(struct Piece board[ROW][COL], enum Color color_to_move, struct
 	board[pX][pY] = moved_piece;
 	board[x][y].type = empty;
 
-	bool attacked = king_attacked(board, color_to_move);
+	bool attacked = king_attacked(board);
 
 	board[x][y] = moved_piece;
 	board[pX][pY] = original_piece;
@@ -523,12 +536,12 @@ bool board_status(struct Piece board[ROW][COL], enum Color color_to_move, struct
 	return attacked;
 }
 
-int legal_moves(struct Piece board[ROW][COL], struct Move moves[256], enum Color color_to_move) {
+int legal_moves(struct Piece board[ROW][COL], struct Move moves[256], enum Color color) {
 	int moves_count = 0; 
 
 	for (int x = 0; x < ROW; x++) {
 		for (int y = 0; y < COL; y++) {
-			if (board[x][y].color != color_to_move) continue;
+			if (board[x][y].color != color) continue;
 
 			// Generate pseudo-legal moves for this piece
 			for (int pX = 0; pX < ROW; pX++) {
@@ -537,11 +550,11 @@ int legal_moves(struct Piece board[ROW][COL], struct Move moves[256], enum Color
 
 					if (!check_move(board, move)) continue;
 
-					if (board[x][y].color != color_to_move) continue;
+					if (board[x][y].color != color) continue;
 
 					if (board[x][y].color == board[pX][pY].color) continue;
 
-					if (board_status(board, color_to_move, move)) continue;
+					if (board_status(board, move)) continue;
 
 					moves[moves_count] = move;
 
@@ -555,7 +568,7 @@ int legal_moves(struct Piece board[ROW][COL], struct Move moves[256], enum Color
 }
 
 /*** perft ***/
-unsigned long perft(struct Piece board[ROW][COL], int depth, enum Color color_to_move) {
+unsigned long perft(struct Piece board[ROW][COL], int depth, enum Color cur_color) {
 	if (!depth) {
 		return 1;    
 	}
@@ -563,7 +576,7 @@ unsigned long perft(struct Piece board[ROW][COL], int depth, enum Color color_to
 	unsigned long nodes = 0;
 
 	struct Move moves[256];
-	legal_moves(board, moves, color_to_move);
+	legal_moves(board, moves, cur_color);
 
 	for (int i = 0; i < sizeof(moves) / sizeof(moves[0]); i++) {
 		struct Move move = moves[i];
@@ -589,7 +602,7 @@ unsigned long perft(struct Piece board[ROW][COL], int depth, enum Color color_to
 }
 
 
-void test_perft(struct Piece board[ROW][COL], int depth, enum Color color_to_move) {
+void test_perft(struct Piece board[ROW][COL], int depth) {
 	clock_t start_time = clock();
 
 	unsigned long nodes = perft(board, depth, color_to_move);
@@ -697,7 +710,7 @@ int evaluate(struct Piece board[ROW][COL]) {
 }
 
 
-int negamax(struct Piece board[ROW][COL], int alpha, int beta, int depth, enum Color color_to_move, struct Move *best_move) {
+int negamax(struct Piece board[ROW][COL], int alpha, int beta, int depth, enum Color cur_color, struct Move *best_move) {
 	if (!depth) {
 		return evaluate(board);
 	}
@@ -705,7 +718,7 @@ int negamax(struct Piece board[ROW][COL], int alpha, int beta, int depth, enum C
 	int best_value = INT_MIN;
 
 	struct Move moves[256];
-	int moves_count = legal_moves(board, moves, color_to_move);
+	int moves_count = legal_moves(board, moves, cur_color);
 
 	for (int i = 0; i < moves_count; i++) {
 		struct Piece temp_board[ROW][COL];
@@ -716,7 +729,7 @@ int negamax(struct Piece board[ROW][COL], int alpha, int beta, int depth, enum C
 
 		//print_board(temp_board, white);
 
-		int value = -negamax(temp_board, -alpha, -beta, depth - 1, reverse_color(color_to_move), NULL);
+		int value = -negamax(temp_board, -alpha, -beta, depth - 1, reverse_color(cur_color), NULL);
 
 		if (value > best_value) {
 			best_value = value;
@@ -737,13 +750,8 @@ int negamax(struct Piece board[ROW][COL], int alpha, int beta, int depth, enum C
 
 bool castle_rights(
 		struct Piece board[ROW][COL], 
-		//enum Color color_to_move,
 		bool castle_w,
 		bool castle_b,
-		bool rook1_w_moved,
-		bool rook2_w_moved,
-		bool rook1_b_moved,
-		bool rook2_b_moved,
 		struct Move move
 ) {
 	int x = move.x;
@@ -757,15 +765,13 @@ bool castle_rights(
 	if (type == king && x == pX) {
 		if (color == white) {
 			if (castle_w) {
-				if (pY == 2 && !rook1_w_moved) {
-					// I find this loopy funny
-					// This loops from where the king is to where its going
+				if (pY == 2 && !rook1_w_moved) { // ABSOLUTELY CHAD CODE
 					for (int x = 4; x >= 2; x++) {
-						if (square_attacked(board, 0, x, white)) break;
+						if (square_attacked(board, 0, x)) break;
 					}
 				} else if (pY == 6 && !rook2_w_moved) {
 					for (int x = 4; x <= 6; x++) {
-						if (square_attacked(board, 0, x, white)) break;
+						if (square_attacked(board, 0, x)) break;
 					}
 				}
 			}
@@ -773,11 +779,11 @@ bool castle_rights(
 			if (castle_b) {
 				if (pY == 2 && !rook1_b_moved) {
 					for (int x = 4; x <= 2; x++) {
-						if (square_attacked(board, 7, x, white)) break;
+						if (square_attacked(board, 7, x)) break;
 					}
 				} else if (pY == 6 && !rook2_b_moved) {
 					for (int x = 4; x <= 2; x++) {
-						if (square_attacked(board, 7, x, white)) break;
+						if (square_attacked(board, 7, x)) break;
 					}
 				}
 			}
@@ -792,21 +798,6 @@ void game(struct Piece board[ROW][COL]) {
 	int pX;
 	int pY;
 
-	// Check king castling
-	bool is_rook1_white_moved = false;
-	bool is_rook2_white_moved = false;
-	bool castling_white = true;
-
-	bool is_rook1_black_moved = false;
-	bool is_rook2_black_moved = false;
-	bool castling_black = true;
-
-	// COMPUTER COLOR
-	enum Color computer_color = white;
-
-	enum Color color_to_move = white;
-
-
 	int i;
 	
 	clear_scr();
@@ -816,7 +807,7 @@ void game(struct Piece board[ROW][COL]) {
 
 		int best_value = negamax(board, INT_MIN, INT_MAX, 2, color_to_move, &best_move);
 
-		print_board(board, color_to_move);
+		print_board(board);
 
 		char from[3], to[3];
 
@@ -862,7 +853,7 @@ void game(struct Piece board[ROW][COL]) {
 		// castling shenanigans
 
 		if (check_move(board, move)) {
-			if (board_status(board, color_to_move, move)) {
+			if (board_status(board, move)) {
 				printf("You're in check or moving into it. \n");
 				continue;
 			}
@@ -871,13 +862,13 @@ void game(struct Piece board[ROW][COL]) {
 
 			// Change castling rights
 			if (color_to_move == white) {
-				if (board[x][y].type == rook && y == 7) is_rook1_white_moved = true;
-				else if (board[x][y].type == rook && y == 0) is_rook2_white_moved = true;
-				else if (board[x][y].type == king) castling_white = false;
+				if (board[x][y].type == rook && y == 7) rook1_w_moved = true;
+				else if (board[x][y].type == rook && y == 0) rook2_w_moved = true;
+				else if (board[x][y].type == king) castle_w = false;
 			} else {
-				if (board[x][y].type == rook && y == 7) is_rook1_black_moved = true;
-				else if (board[x][y].type == rook && y == 0) is_rook2_black_moved = true;
-				else if (board[x][y].type == king) castling_black = false;
+				if (board[x][y].type == rook && y == 7) rook1_b_moved = true;
+				else if (board[x][y].type == rook && y == 0) rook2_b_moved = true;
+				else if (board[x][y].type == king) castle_b = false;
 			}
 
 
