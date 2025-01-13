@@ -514,9 +514,9 @@ int legal_moves(struct Piece board[ROW][COL], struct Move moves[256], enum Color
 
 					if (board_status(board, color_to_move, move)) continue;
 
-					moves_count++;
-
 					moves[moves_count] = move;
+
+					moves_count++;
 				}
 			}
 		}
@@ -683,11 +683,9 @@ int negamax(struct Piece board[ROW][COL], int alpha, int beta, int depth, enum C
 
 		memcpy(temp_board, board, sizeof(struct Piece) * ROW * COL);
 
-		printf("Looping %d \n", moves[i].y);
+		move_piece(temp_board, moves[i]);
 
-		//move_piece(temp_board, moves[i]);
-
-		/*print_board(temp_board, white);
+		//print_board(temp_board, white);
 
 		int value = -negamax(temp_board, -alpha, -beta, depth - 1, reverse_color(color_to_move), NULL);
 
@@ -702,7 +700,7 @@ int negamax(struct Piece board[ROW][COL], int alpha, int beta, int depth, enum C
 
 		if (alpha >= beta) {
 			break;
-		}*/
+		}
 	}
 
 	return best_value;
@@ -724,8 +722,11 @@ void game(struct Piece board[ROW][COL]) {
 	bool is_rook2_black_moved = false;
 	bool castling_black = true;
 
-	
+	// COMPUTER COLOR
+	enum Color computer_color = white;
+
 	enum Color color_to_move = white;
+
 
 	int i;
 	
@@ -735,17 +736,6 @@ void game(struct Piece board[ROW][COL]) {
 		struct Move best_move;
 
 		int best_value = negamax(board, INT_MIN, INT_MAX, 2, color_to_move, &best_move);
-
-		//printf("BEST VALUE: %d", best_value);
-
-		//int eval = evaluate(board);
-		//printf("%d \n", eval);
-
-		//test_perft(board, 4, color_to_move);
-
-
-
-
 
 		print_board(board, color_to_move);
 
