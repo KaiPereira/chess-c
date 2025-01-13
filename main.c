@@ -525,10 +525,12 @@ bool castle_rights(
 
 	bool valid = true;
 
+	// All these valids = false are stupid, I have to refactor it
+
 	if (type == king && x == pX && y == 4) {
 		if (color == white) {
 			if (castle_w) {
-				if (pY == 2 && !rook1_w_moved) { // ABSOLUTELY CHAD CODE
+				if (pY == 2 && !rook1_w_moved) {
 					for (int x = 4; x >= 2; x--) {
 						if (board[7][x - 1].type != empty && square_attacked(board, 7, x)) valid = false;
 					}
@@ -536,8 +538,8 @@ bool castle_rights(
 					for (int x = 4; x <= 6; x++) {
 						if (board[7][x + 1].type != empty && square_attacked(board, 7, x)) valid = false;
 					}
-				}
-			}
+				} else valid = false;
+			} else valid = false;
 		} else if (color == black) {
 			if (castle_b) {
 				if (pY == 2 && !rook1_b_moved) {
@@ -548,11 +550,12 @@ bool castle_rights(
 					for (int x = 4; x <= 6; x++) {
 						if (board[0][x + 1].type != empty && square_attacked(board, 0, x)) valid = false;
 					}
-				}
-			}
-		}
-	}
+				} else valid = false;
+			} else valid = false;
+		} else valid = false;
+	} else valid = false;
 
+	printf("CASTLE RIGHTS ARE: %s \n", valid ? "TRUE" : "FALSE");
 
 	return valid;
 }
