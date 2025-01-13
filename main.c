@@ -287,6 +287,22 @@ void print_move(struct Move move) {
 	printf("Move: %c%d to %c%d \n", row1, 8 - move.x, row2, 8 - move.pX);
 }
 
+void castle(struct Piece board[ROW][COL], struct Move move) {
+	int x = move.x;
+	int y = move.y;
+	int pX = move.pX;
+	int pY = move.pY;
+
+	move_piece(board, move);
+
+	if (move.pY == 6) { // right side castle
+		move_piece(board, create_move(x, 7, pX, 5));
+	} else if (move.pY == 2) { // left
+		move_piece(board, create_move(x, 0, pX, 3));
+	}
+}
+
+
 /*** movegen ***/
 /*** pseudolegality thanks to https://github.com/JDSherbert for some movegen logic ***/
 // en passant is stupid :/
@@ -493,6 +509,52 @@ bool square_attacked(struct Piece board[ROW][COL], int pX, int pY) {
 	}
 
 	return false;
+}
+
+bool castle_rights(
+		struct Piece board[ROW][COL], 
+		struct Move move
+) {
+	int x = move.x;
+	int y = move.y;
+	int pX = move.pX;
+	int pY = move.pY;
+
+	enum Color color = board[x][y].color;
+	enum Type type = board[x][y].type;
+
+	bool valid = true;
+
+	if (type == king && x == pX && y == 4) {
+		if (color == white) {
+			if (castle_w) {
+				if (pY == 2 && !rook1_w_moved) { // ABSOLUTELY CHAD CODE
+					for (int x = 4; x >= 2; x--) {
+						if (board[7][x - 1].type != empty && square_attacked(board, 7, x)) valid = false;
+					}
+				} else if (pY == 6 && !rook2_w_moved) {
+					for (int x = 4; x <= 6; x++) {
+						if (board[7][x + 1].type != empty && square_attacked(board, 7, x)) valid = false;
+					}
+				}
+			}
+		} else if (color == black) {
+			if (castle_b) {
+				if (pY == 2 && !rook1_b_moved) {
+					for (int x = 4; x >= 2; x--) {
+						if (board[0][x - 1].type != empty && square_attacked(board, 0, x)) valid = false;
+					}
+				} else if (pY == 6 && !rook2_b_moved) {
+					for (int x = 4; x <= 6; x++) {
+						if (board[0][x + 1].type != empty && square_attacked(board, 0, x)) valid = false;
+					}
+				}
+			}
+		}
+	}
+
+
+	return valid;
 }
 
 
@@ -747,52 +809,6 @@ int negamax(struct Piece board[ROW][COL], int alpha, int beta, int depth, enum C
 	return best_value;
 }
 
-bool castle_rights(
-		struct Piece board[ROW][COL], 
-		struct Move move
-) {
-	int x = move.x;
-	int y = move.y;
-	int pX = move.pX;
-	int pY = move.pY;
-
-	enum Color color = board[x][y].color;
-	enum Type type = board[x][y].type;
-
-	bool valid = true;
-
-	if (type == king && x == pX && y == 4) {
-		if (color == white) {
-			if (castle_w) {
-				printf("WHITE \n");
-				if (pY == 2 && !rook1_w_moved) { // ABSOLUTELY CHAD CODE
-					for (int x = 4; x >= 2; x--) {
-						if (board[7][x - 1].type != empty && square_attacked(board, 0, x)) valid = false;
-					}
-				} else if (pY == 6 && !rook2_w_moved) {
-					for (int x = 4; x <= 6; x++) {
-						if (board[0][x + 1].type != empty && square_attacked(board, 0, x)) valid = false;
-					}
-				}
-			}
-		} else if (color == black) {
-			if (castle_b) {
-				if (pY == 2 && !rook1_b_moved) {
-					for (int x = 4; x >= 2; x--) {
-						if (board[0][x - 1].type != empty && square_attacked(board, 7, x)) valid = false;
-					}
-				} else if (pY == 6 && !rook2_b_moved) {
-					for (int x = 4; x <= 6; x++) {
-						if (board[0][x + 1].type != empty && square_attacked(board, 7, x)) valid = false;
-					}
-				}
-			}
-		}
-	}
-
-
-	return valid;
-}
 
 /*** gameloop ***/
 void game(struct Piece board[ROW][COL]) {
@@ -809,11 +825,6 @@ void game(struct Piece board[ROW][COL]) {
 		struct Move best_move;
 
 		int best_value = negamax(board, INT_MIN, INT_MAX, 2, color_to_move, &best_move);
-
-		//print_move(best_move);
-
-		castle_rights(board, create_move(7, 4, 7, 2)) ? printf("CAN CASTLE") : printf("CANNOT CASTLE");
-
 
 		print_board(board);
 
@@ -844,21 +855,27 @@ void game(struct Piece board[ROW][COL]) {
 		// Create a move and check it
 		struct Move move = create_move(x, y, pX, pY);
 
-		if (board[x][y].color != color_to_move) {
+		enum Color color = board[x][y].color;
+		enum Type type = board[x][y].type;
+
+
+		if (color != color_to_move) {
 			printf("Wrong color to move \n");
 			continue;
 		}
 
-		if (board[x][y].color == board[pX][pY].color) {
+		if (color == board[pX][pY].color) {
 			printf("Can't move your piece onto your own color");
 			continue;
 		}
 
 
-		// Can castle
-		// Castle function
-
 		// castling shenanigans
+		if (type == king && castle_rights(board, move)) {
+			castle(board, move);
+			continue;
+		}
+
 
 		if (check_move(board, move)) {
 			if (board_status(board, move)) {
@@ -870,13 +887,13 @@ void game(struct Piece board[ROW][COL]) {
 
 			// Change castling rights
 			if (color_to_move == white) {
-				if (board[x][y].type == rook && y == 7) rook1_w_moved = true;
-				else if (board[x][y].type == rook && y == 0) rook2_w_moved = true;
-				else if (board[x][y].type == king) castle_w = false;
+				if (type == rook && y == 7) rook1_w_moved = true;
+				else if (type == rook && y == 0) rook2_w_moved = true;
+				else if (type == king) castle_w = false;
 			} else {
-				if (board[x][y].type == rook && y == 7) rook1_b_moved = true;
-				else if (board[x][y].type == rook && y == 0) rook2_b_moved = true;
-				else if (board[x][y].type == king) castle_b = false;
+				if (type == rook && y == 7) rook1_b_moved = true;
+				else if (type == rook && y == 0) rook2_b_moved = true;
+				else if (type == king) castle_b = false;
 			}
 
 
