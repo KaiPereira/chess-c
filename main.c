@@ -758,17 +758,27 @@ bool castle_rights(
 		if (color == white) {
 			if (castle_w) {
 				if (pY == 2 && !rook1_w_moved) {
-
+					// I find this loopy funny
+					// This loops from where the king is to where its going
+					for (int x = 4; x >= 2; x++) {
+						if (square_attacked(board, 0, x, white)) break;
+					}
 				} else if (pY == 6 && !rook2_w_moved) {
-
+					for (int x = 4; x <= 6; x++) {
+						if (square_attacked(board, 0, x, white)) break;
+					}
 				}
 			}
 		} else if (color == black) {
 			if (castle_b) {
 				if (pY == 2 && !rook1_b_moved) {
-
+					for (int x = 4; x <= 2; x++) {
+						if (square_attacked(board, 7, x, white)) break;
+					}
 				} else if (pY == 6 && !rook2_b_moved) {
-
+					for (int x = 4; x <= 2; x++) {
+						if (square_attacked(board, 7, x, white)) break;
+					}
 				}
 			}
 		}
