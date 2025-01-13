@@ -440,50 +440,6 @@ bool queen_rule(struct Piece board[ROW][COL], struct Move move) {
 	return true;
 }
 
-bool king_rule(struct Piece board[ROW][COL], struct Move move) { 
-	int x = move.x;
-	int y = move.y;
-	int pX = move.pX;
-	int pY = move.pY;
-
-	enum Color color = board[x][y].color;
-	enum Type type = board[x][y].type;
-
-	bool valid = true;
-
-	// All these valids = false are stupid, I have to refactor it
-	if (type == king && x == pX && y == 4) {
-		if (color == white) {
-			if (castle_w) {
-				if (pY == 2 && !rook1_w_moved) {
-					for (int x = 4; x >= 2; x--) {
-						if (board[7][x - 1].type == empty && !square_attacked(board, 7, x)) valid = true;
-					}
-				} else if (pY == 6 && !rook2_w_moved) {
-					for (int x = 4; x <= 6; x++) {
-						if (board[7][x + 1].type == empty && !square_attacked(board, 7, x)) valid = true;
-					}
-				}
-			}
-		} else if (color == black) {
-			if (castle_b) {
-				if (pY == 2 && !rook1_b_moved) {
-					for (int x = 4; x >= 2; x--) {
-						if (board[0][x - 1].type == empty && !square_attacked(board, 0, x)) valid = true;
-					}
-				} else if (pY == 6 && !rook2_b_moved) {
-					for (int x = 4; x <= 6; x++) {
-						if (board[0][x + 1].type == empty && !square_attacked(board, 0, x)) valid = true;
-					}
-				}
-			}
-		}
-	}
-
-	if (abs(x - pX) <= 1 && abs(y - pY) <= 1) return true;
-
-	else return valid;
-}
 
 
 /*** chess/pins/attacks ***/
@@ -544,6 +500,63 @@ bool square_attacked(struct Piece board[ROW][COL], int pX, int pY) {
 	}
 
 	return false;
+}
+
+bool castle_rights(
+		struct Piece board[ROW][COL], 
+		struct Move move
+) {
+	int x = move.x;
+	int y = move.y;
+	int pX = move.pX;
+	int pY = move.pY;
+
+	enum Color color = board[x][y].color;
+	enum Type type = board[x][y].type;
+
+	bool valid = false;
+
+	// All these valids = false are stupid, I have to refactor it
+	if (type == king && x == pX && y == 4) {
+		if (color == white) {
+			if (castle_w) {
+				if (pY == 2 && !rook1_w_moved) {
+					for (int x = 4; x >= 2; x--) {
+						if (board[7][x - 1].type == empty && !square_attacked(board, 7, x)) valid = true;
+					}
+				} else if (pY == 6 && !rook2_w_moved) {
+					for (int x = 4; x <= 6; x++) {
+						if (board[7][x + 1].type == empty && !square_attacked(board, 7, x)) valid = true;
+					}
+				}
+			}
+		} else if (color == black) {
+			if (castle_b) {
+				if (pY == 2 && !rook1_b_moved) {
+					for (int x = 4; x >= 2; x--) {
+						if (board[0][x - 1].type == empty && !square_attacked(board, 0, x)) valid = true;
+					}
+				} else if (pY == 6 && !rook2_b_moved) {
+					for (int x = 4; x <= 6; x++) {
+						if (board[0][x + 1].type == empty && !square_attacked(board, 0, x)) valid = true;
+					}
+				}
+			}
+		}
+	}
+
+	return valid;
+}
+
+bool king_rule(struct Piece board[ROW][COL], struct Move move) { 
+	int x = move.x;
+	int y = move.y;
+	int pX = move.pX;
+	int pY = move.pY;
+
+	if (abs(x - pX) <= 1 && abs(y - pY) <= 1) return true;
+
+	else return false;
 }
 
 
