@@ -437,7 +437,6 @@ bool king_rule(struct Piece board[ROW][COL], struct Move move) {
 
 /*** chess/pins/attacks ***/
 bool king_attacked(struct Piece board[ROW][COL]) {
-	
 	int x, y;
 
 	find_piece(board, color_to_move, &x, &y);
@@ -750,8 +749,6 @@ int negamax(struct Piece board[ROW][COL], int alpha, int beta, int depth, enum C
 
 bool castle_rights(
 		struct Piece board[ROW][COL], 
-		bool castle_w,
-		bool castle_b,
 		struct Move move
 ) {
 	int x = move.x;
@@ -762,33 +759,43 @@ bool castle_rights(
 	enum Color color = board[x][y].color;
 	enum Type type = board[x][y].type;
 
-	if (type == king && x == pX) {
+	if (type == king && x == pX && y == 4) {
 		if (color == white) {
 			if (castle_w) {
 				if (pY == 2 && !rook1_w_moved) { // ABSOLUTELY CHAD CODE
-					for (int x = 4; x >= 2; x++) {
+					for (int x = 4; x >= 2; x--) {
+						if (board[0][x].type != empty) break;
 						if (square_attacked(board, 0, x)) break;
+						return true;
 					}
 				} else if (pY == 6 && !rook2_w_moved) {
 					for (int x = 4; x <= 6; x++) {
+						if (board[0][x].type != empty) break;
 						if (square_attacked(board, 0, x)) break;
+						return true;
 					}
 				}
 			}
 		} else if (color == black) {
 			if (castle_b) {
 				if (pY == 2 && !rook1_b_moved) {
-					for (int x = 4; x <= 2; x++) {
+					for (int x = 4; x >= 2; x--) {
+						if (board[7][x].type != empty) break;
 						if (square_attacked(board, 7, x)) break;
+						return true;
 					}
 				} else if (pY == 6 && !rook2_b_moved) {
-					for (int x = 4; x <= 2; x++) {
+					for (int x = 4; x <= 6; x++) {
+						if (board[7][x].type != empty) break;
 						if (square_attacked(board, 7, x)) break;
+						return true;
 					}
 				}
 			}
 		}
 	}
+
+	return false;
 }
 
 /*** gameloop ***/
@@ -806,6 +813,11 @@ void game(struct Piece board[ROW][COL]) {
 		struct Move best_move;
 
 		int best_value = negamax(board, INT_MIN, INT_MAX, 2, color_to_move, &best_move);
+
+		//print_move(best_move);
+
+		castle_rights(board, create_move(7, 4, 7, 2)) ? printf("CAN CASTLE") : printf("CANNOT CASTLE");
+
 
 		print_board(board);
 
