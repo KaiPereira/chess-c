@@ -759,20 +759,19 @@ bool castle_rights(
 	enum Color color = board[x][y].color;
 	enum Type type = board[x][y].type;
 
+	bool valid = true;
+
 	if (type == king && x == pX && y == 4) {
 		if (color == white) {
 			if (castle_w) {
+				printf("WHITE \n");
 				if (pY == 2 && !rook1_w_moved) { // ABSOLUTELY CHAD CODE
 					for (int x = 4; x >= 2; x--) {
-						if (board[0][x].type != empty) break;
-						if (square_attacked(board, 0, x)) break;
-						return true;
+						if (board[7][x - 1].type != empty && square_attacked(board, 0, x)) valid = false;
 					}
 				} else if (pY == 6 && !rook2_w_moved) {
 					for (int x = 4; x <= 6; x++) {
-						if (board[0][x].type != empty) break;
-						if (square_attacked(board, 0, x)) break;
-						return true;
+						if (board[0][x + 1].type != empty && square_attacked(board, 0, x)) valid = false;
 					}
 				}
 			}
@@ -780,22 +779,19 @@ bool castle_rights(
 			if (castle_b) {
 				if (pY == 2 && !rook1_b_moved) {
 					for (int x = 4; x >= 2; x--) {
-						if (board[7][x].type != empty) break;
-						if (square_attacked(board, 7, x)) break;
-						return true;
+						if (board[0][x - 1].type != empty && square_attacked(board, 7, x)) valid = false;
 					}
 				} else if (pY == 6 && !rook2_b_moved) {
 					for (int x = 4; x <= 6; x++) {
-						if (board[7][x].type != empty) break;
-						if (square_attacked(board, 7, x)) break;
-						return true;
+						if (board[0][x + 1].type != empty && square_attacked(board, 7, x)) valid = false;
 					}
 				}
 			}
 		}
 	}
 
-	return false;
+
+	return valid;
 }
 
 /*** gameloop ***/
