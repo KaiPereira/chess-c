@@ -280,29 +280,7 @@ void print_move(struct Move move) {
 	printf("Move: %c%d to %c%d \n", row1, 8 - move.x, row2, 8 - move.pX);
 }
 
-void castle(struct Piece board[ROW][COL], struct Move move) {
-	int x = move.x;
-	int y = move.y;
-	int pX = move.pX;
-	int pY = move.pY;
-
-	move_piece(board, move);
-
-	if (move.pY == 6) { // right side castle
-		move_piece(board, create_move(x, 7, pX, 5));
-	} else if (move.pY == 2) { // left
-		move_piece(board, create_move(x, 0, pX, 3));
-	}
-}
-
 void move_piece(struct Piece board[ROW][COL], struct Move move) {
-	enum Type type = board[move.x][move.y];
-
-	if (type == king && castle_rights(board, move)) {
-		castle(board, move);
-		return;
-	}
-
 	board[move.pX][move.pY] = board[move.x][move.y];
 
 	board[move.x][move.y].type = empty;
@@ -446,6 +424,16 @@ bool queen_rule(struct Piece board[ROW][COL], struct Move move) {
 	return true;
 }
 
+bool king_rule(struct Piece board[ROW][COL], struct Move move) { 
+	int x = move.x;
+	int y = move.y;
+	int pX = move.pX;
+	int pY = move.pY;
+
+	if (abs(x - pX) <= 1 && abs(y - pY) <= 1) return true;
+
+	else return false;
+}
 
 
 /*** chess/pins/attacks ***/
@@ -553,21 +541,38 @@ bool castle_rights(
 	return valid;
 }
 
-bool king_rule(struct Piece board[ROW][COL], struct Move move) { 
+void castle(struct Piece board[ROW][COL], struct Move move) {
 	int x = move.x;
 	int y = move.y;
 	int pX = move.pX;
 	int pY = move.pY;
 
-	if (abs(x - pX) <= 1 && abs(y - pY) <= 1) return true;
+	move_piece(board, move);
 
-	else return false;
+	if (move.pY == 6) { // right side castle
+		move_piece(board, create_move(x, 7, pX, 5));
+	} else if (move.pY == 2) { // left
+		move_piece(board, create_move(x, 0, pX, 3));
+	}
 }
+
+
+// This implements castling too
+void make_move(struct Piece board[ROW][COL], struct Move move) {
+	if (castle_rights(board, move)) {
+		castle(board, move);
+	} else {
+		move_piece(board, move);
+	}
+}
+
 
 
 /*** final move gen ***/
 bool check_move(struct Piece board[ROW][COL], struct Move move) {
 	enum Type type = board[move.x][move.y].type;
+
+	if (castle_rights(board, move)) return true;
 
 	switch(type) {
 		case pawn: return pawn_rule(board, move);
@@ -664,7 +669,7 @@ unsigned long perft(struct Piece board[ROW][COL], int depth, enum Color cur_colo
 		char node_type = get_type_char(moving_piece.type);
 
 		// Make the move
-		move_piece(board, moves[i]);
+		make_move(board, moves[i]);
 
 		// Check legality (doesn't leave own king in check)
 		nodes += perft(board, depth - 1, reverse_color(color_to_move));
@@ -801,9 +806,7 @@ int negamax(struct Piece board[ROW][COL], int alpha, int beta, int depth, enum C
 
 		memcpy(temp_board, board, sizeof(struct Piece) * ROW * COL);
 
-		move_piece(temp_board, moves[i]);
-
-		//print_board(temp_board, white);
+		make_move(temp_board, moves[i]);
 
 		int value = -negamax(temp_board, -alpha, -beta, depth - 1, reverse_color(cur_color), NULL);
 
@@ -841,7 +844,7 @@ void game(struct Piece board[ROW][COL]) {
 
 		int best_value = negamax(board, INT_MIN, INT_MAX, 2, color_to_move, &best_move);
 
-		move_piece(board, best_move);
+		make_move(board, best_move);
 
 		print_board(board);
 
@@ -851,14 +854,12 @@ void game(struct Piece board[ROW][COL]) {
 
 		continue;
 
-		/*struct Move moves[256];
+		struct Move moves[256];
 		int moves_count = legal_moves(board, moves, color_to_move);
 
 		for (int i = 0; i < moves_count; i++) {
 			print_move(moves[i]);
-		}*/
-
-
+		}
 
 		print_board(board);
 
@@ -892,7 +893,6 @@ void game(struct Piece board[ROW][COL]) {
 		enum Color color = board[x][y].color;
 		enum Type type = board[x][y].type;
 
-
 		if (color != color_to_move) {
 			printf("Wrong color to move \n");
 			continue;
@@ -903,21 +903,13 @@ void game(struct Piece board[ROW][COL]) {
 			continue;
 		}
 
-
-		// castling shenanigans
-		if (type == king && castle_rights(board, move)) {
-			castle(board, move);
-			continue;
-		}
-
-
 		if (check_move(board, move)) {
 			if (board_status(board, move)) {
 				printf("You're in check or moving into it. \n");
 				continue;
 			}
 
-			move_piece(board, move);
+			make_move(board, move);
 
 			// Change castling rights
 			if (color_to_move == white) {
