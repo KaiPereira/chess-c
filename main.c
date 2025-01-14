@@ -33,8 +33,8 @@ x  ♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
 
 
 /*** definition ***/
-//#define STARTING_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-#define STARTING_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1"
+#define STARTING_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+//#define STARTING_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1"
 #define BOARD_SIZE 64
 #define ROW 8
 #define COL 8
@@ -592,8 +592,6 @@ bool board_status(struct Piece board[ROW][COL], struct Move move) {
 	int pX = move.pX;
 	int pY = move.pY;
 
-	if (king_attacked(board)) return true;
-
 	// Save the state of the affected squares
 	struct Piece original_piece = board[pX][pY];
 	struct Piece moved_piece = board[x][y];
@@ -790,7 +788,6 @@ int evaluate(struct Piece board[ROW][COL]) {
 	return eval;
 }
 
-
 int negamax(struct Piece board[ROW][COL], int alpha, int beta, int depth, enum Color cur_color, struct Move *best_move) {
 	if (!depth) {
 		return evaluate(board);
@@ -840,19 +837,21 @@ void game(struct Piece board[ROW][COL]) {
 	clear_scr();
 
 	while (true) {
-		struct Move best_move;
 
-		int best_value = negamax(board, INT_MIN, INT_MAX, 2, color_to_move, &best_move);
+		if (color_to_move == white) {
+			struct Move best_move;
 
-		make_move(board, best_move);
+			int best_value = negamax(board, INT_MIN, INT_MAX, 6, color_to_move, &best_move);
 
-		print_board(board);
+			make_move(board, best_move);
 
-		sleep(2);
+			print_board(board);
 
-		color_to_move = reverse_color(color_to_move);
+			color_to_move = reverse_color(color_to_move);
 
-		continue;
+			continue;
+
+		}
 
 		struct Move moves[256];
 		int moves_count = legal_moves(board, moves, color_to_move);
