@@ -75,8 +75,8 @@ bool rook1_b_moved = false;
 bool rook2_b_moved = false;
 bool castle_b = true;
 
-enum Color computer_color = white;
-enum Color color_to_move = white;
+enum Color computer_color = black;
+enum Color color_to_move = black;
 
 
 /*** General Helper Functions ***/
@@ -696,98 +696,57 @@ void test_perft(struct Piece board[ROW][COL], int depth) {
 
 /*** evaluation ***/
 int evaluate(struct Piece board[ROW][COL]) {
-	int pawn_value = 100;
-	int knight_value = 300;
-	int bishop_value = 350;
-	int rook_value = 500;
-	int queen_value = 800;
-	int king_value = 100000;
+	int pawn_value = 100, knight_value = 300, bishop_value = 350;
+	int rook_value = 500, queen_value = 800, king_value = 100000;
 
 	int eval = 0;
 
 	for (int x = 0; x < ROW; x++) {
 		for (int y = 0; y < COL; y++) {
-			int position_value;
-			int type_value;
+			if (board[x][y].type == empty) continue;
 
 			enum Type type = board[x][y].type;
 			enum Color color = board[x][y].color;
 
-			if (type == empty) continue;
+			int sign = (color == white) ? 1 : -1;
+			int position_value = 0, type_value = 0;
 
-			if (color == white) {
-				switch(type) {
-					case pawn: 
-						position_value = pawn_table_w[x][y]; 
-						type_value = pawn_value;
-						break;
-					case knight: 
-						position_value = knight_table_w[x][y]; 
-						type_value = knight_value;
-						break;
-					case bishop: 
-						position_value = bishop_table_w[x][y]; 
-						type_value = bishop_value;
-						break;
-					case rook: 
-						position_value = rook_table_w[x][y]; 
-						type_value = rook_value;
-						break;
-					case queen: 
-						position_value = queen_table_w[x][y]; 
-						type_value = queen_value;
-						break;
-					case king: 
-						position_value = king_table_w[x][y]; 
-						type_value = king_value;
-						break;
-					default:
-						break;
-				};
+			switch(type) {
+				case pawn: 
+					position_value = (color == white) ? pawn_table[x][y] : pawn_table[7 - x][y];
+					type_value = pawn_value;
+					break;
+				case knight: 
+					position_value = (color == white) ? knight_table[x][y] : knight_table[7 - x][y];
+					type_value = knight_value;
+					break;
+				case bishop: 
+					position_value = (color == white) ? bishop_table[x][y] : bishop_table[7 - x][y];
+					type_value = bishop_value;
+					break;
+				case rook: 
+					position_value = (color == white) ? rook_table[x][y] : rook_table[7 - x][y];
+					type_value = rook_value;
+					break;
+				case queen: 
+					position_value = (color == white) ? queen_table[x][y] : queen_table[7 - x][y];
+					type_value = queen_value;
+					break;
+				case king: 
+					position_value = (color == white) ? king_table[x][y] : king_table[7 - x][y];
+					type_value = king_value;
+					break;
+				default:
+					fprintf(stderr, "Invalid piece type: %d\n", type);
+					break;
+			}
 
-				int piece_value = position_value + type_value;
-
-				eval += piece_value;
-			} else if (color == black) {
-				switch(type) {
-					case pawn: 
-						position_value = pawn_table_b[x][y]; 
-						type_value = pawn_value;
-						break;
-					case knight: 
-						position_value = knight_table_b[x][y]; 
-						type_value = knight_value;
-						break;
-					case bishop: 
-						position_value = bishop_table_b[x][y]; 
-						type_value = bishop_value;
-						break;
-					case rook: 
-						position_value = rook_table_b[x][y]; 
-						type_value = rook_value;
-						break;
-					case queen: 
-						position_value = queen_table_b[x][y]; 
-						type_value = queen_value;
-						break;
-					case king: 
-						position_value = king_table_b[x][y]; 
-						type_value = king_value;
-						break;
-					default:
-						break;
-				};
-
-				int piece_value = position_value + type_value;
-
-				eval -= piece_value;
-			} else continue;
+			eval += sign * (position_value + type_value);
 		}
 	}
 
 	return eval;
 }
-
 int negamax(struct Piece board[ROW][COL], int alpha, int beta, int depth, enum Color cur_color, struct Move *best_move) {
 	if (!depth) {
 		return evaluate(board);
@@ -838,7 +797,7 @@ void game(struct Piece board[ROW][COL]) {
 
 	while (true) {
 
-		if (color_to_move == white) {
+		/*if (color_to_move == computer_color) {
 			struct Move best_move;
 
 			int best_value = negamax(board, INT_MIN, INT_MAX, 6, color_to_move, &best_move);
@@ -851,14 +810,21 @@ void game(struct Piece board[ROW][COL]) {
 
 			continue;
 
-		}
+		}*/
 
-		struct Move moves[256];
+		struct Move best_move;
+
+		int best_value = negamax(board, INT_MIN, INT_MAX, 7, color_to_move, &best_move);
+
+		printf("BEST VALUE: %d \n", best_value);
+		print_move(best_move);
+
+		/*struct Move moves[256];
 		int moves_count = legal_moves(board, moves, color_to_move);
 
 		for (int i = 0; i < moves_count; i++) {
 			print_move(moves[i]);
-		}
+		}*/
 
 		print_board(board);
 
