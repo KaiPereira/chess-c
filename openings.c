@@ -28,7 +28,7 @@ void parse_csv_line(char *line, struct Opening *opening) {
 }
 
 void parse_openings(struct Opening *opening) {
-	FILE *file = fopen("openings.csv", "r");
+	FILE *file = fopen("openings_test.csv", "r");
 
 	if (!file) {
 		perror("Error opening file");
@@ -46,9 +46,12 @@ void parse_openings(struct Opening *opening) {
 	int line_count = 0;
 
 	while (fgets(line, sizeof(line), file) && line_count < MAX_LINES) {
-		line[strcspn(line, "\n")] = 0;
+		for (int i = 0; i < MAX_LINE_LENGTH; i++) {
+			if (!line[i]) break;
+			printf("%c", line[i]);
+		}
 
-		parse_csv_line(line, &openings[line_count]);
+		printf("\n");
 	}
 
 	fclose(file);
