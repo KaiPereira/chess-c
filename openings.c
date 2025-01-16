@@ -34,8 +34,15 @@ void parse_openings(struct Opening *opening) {
 		perror("Error opening file");
 	}
 
-	/*char line[MAX_LINE_LENGTH];
-	struct Opening openings[MAX_LINES];
+	char line[MAX_LINE_LENGTH];
+
+
+	struct Opening *openings = malloc(MAX_LINES * sizeof(struct Opening));
+
+	if (!openings) {
+		perror("failed to allocate memory");
+	}
+
 	int line_count = 0;
 
 	while (fgets(line, sizeof(line), file) && line_count < MAX_LINES) {
@@ -46,6 +53,9 @@ void parse_openings(struct Opening *opening) {
 
 	fclose(file);
 
+
+	printf("MAKES IT HERE %d \n", line_count);
+
 	for (int i = 0; i < line_count; i++) {
 		printf("ECO: %s, NAME: %s, MOVES:", openings[i].eco, openings[i].name);
 		for (int j = 0; j < openings[i].move_count; j++) {
@@ -53,5 +63,8 @@ void parse_openings(struct Opening *opening) {
 		}
 
 		printf("\n");
-	}*/
+	}
+
+	// free memory after
+	free(openings);
 }
