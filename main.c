@@ -33,8 +33,8 @@ x  ♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
 
 
 /*** definition ***/
-//#define STARTING_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-#define STARTING_FEN "rnbqkbnr/pppppppp/8/1N6/3n4/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+#define STARTING_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+//#define STARTING_FEN "rnbqkbnr/pppppppp/8/1N6/3n4/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 #define BOARD_SIZE 64
 #define ROW 8
 #define COL 8
@@ -832,15 +832,12 @@ void game(struct Piece board[ROW][COL]) { int x;
 	clear_scr();
 
 	while (true) {
-		/*struct Move best_move;
+		struct Move best_move;
 
 		int best_value = minimax(board, 3, INT_MIN, INT_MAX, color_to_move, &best_move);
 
 		printf("BEST VALUE: %d \n", best_value);
-		print_move(best_move);*/
-
-		int evaluation = evaluate(board);
-		printf("EVALUATION: %d", evaluation);
+		print_move(best_move);
 
 
 		print_board(board);
