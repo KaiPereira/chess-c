@@ -741,7 +741,8 @@ int evaluate(struct Piece board[ROW][COL]) {
 					break;
 			}
 
-			eval += sign * (position_value + type_value);
+			//eval += sign * (position_value + type_value);
+			eval += sign * (type_value);
 		}
 	}
 
@@ -783,15 +784,15 @@ int evaluate(struct Piece board[ROW][COL]) {
 	return best_value;
 }*/
 
-int minimax(struct Piece board[ROW][COL], int depth, int alpha, int beta, enum Color maximizing_player) {
+int minimax(struct Piece board[ROW][COL], int depth, int alpha, int beta, enum Color color) {
 	if (depth == 0) {
 		return evaluate(board);
 	}
 
 	struct Move moves[256];
-	int moves_count = legal_moves(board, moves, maximizing_player);
+	int moves_count = legal_moves(board, moves, color);
 
-	if (maximizing_player) {
+	if (color == white) {
 		int max_value = INT_MIN;
 
 		for (int i = 0; i < moves_count; i++) {
@@ -801,7 +802,7 @@ int minimax(struct Piece board[ROW][COL], int depth, int alpha, int beta, enum C
 
 			make_move(temp_board, moves[i]);
 
-			int value = minimax(board, depth - 1, alpha, beta, false);
+			int value = minimax(temp_board, depth - 1, alpha, beta, false);
 
 			if (value > max_value) {
 				max_value = value;
@@ -812,9 +813,9 @@ int minimax(struct Piece board[ROW][COL], int depth, int alpha, int beta, enum C
 			if (beta <= alpha) {
 				break;
 			}
-
-			return max_value;
 		}
+
+		return max_value;
 	} else {
 		int min_value = INT_MAX;
 
@@ -825,7 +826,7 @@ int minimax(struct Piece board[ROW][COL], int depth, int alpha, int beta, enum C
 
 			make_move(temp_board, moves[i]);
 
-			int value = minimax(board, depth - 1, alpha, beta, false);
+			int value = minimax(temp_board, depth - 1, alpha, beta, false);
 
 			if (min_value > value) {
 				min_value = value;
@@ -837,8 +838,10 @@ int minimax(struct Piece board[ROW][COL], int depth, int alpha, int beta, enum C
 				break;
 			}
 
-			return min_value;
+			//printf("%d \n", i);
 		}
+
+		return min_value;
 	}
 }
 
@@ -877,9 +880,12 @@ void game(struct Piece board[ROW][COL]) {
 		printf("BEST VALUE: %d \n", best_value);
 		print_move(best_move);*/
 
-		int best_value = minimax(board, 4, INT_MIN, INT_MAX, color_to_move);
+		int best_value = minimax(board, 2, INT_MIN, INT_MAX, color_to_move);
 
-		printf("BEST MOVE: %d \n", best_value);
+		printf("BEST VALUE: %d", best_value);
+
+
+		//print_move(best_move);
 
 		/*struct Move moves[256];
 		int moves_count = legal_moves(board, moves, color_to_move);
