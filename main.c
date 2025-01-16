@@ -263,6 +263,10 @@ enum Color reverse_color(enum Color color) {
 	}
 }
 
+void change_turn() {
+	color_to_move = reverse_color(color_to_move);
+}
+
 struct Move create_move(int x, int y, int pX, int pY) {
 	struct Move move;
 	move.x = x;
@@ -832,15 +836,27 @@ void game(struct Piece board[ROW][COL]) { int x;
 	clear_scr();
 
 	while (true) {
-		struct Move best_move;
 
-		int best_value = minimax(board, 3, INT_MIN, INT_MAX, color_to_move, &best_move);
+		// Computers turn
+		if (color_to_move == computer_color) {
+			struct Move best_move;
 
-		printf("BEST VALUE: %d \n", best_value);
-		print_move(best_move);
+			int best_value = minimax(board, 3, INT_MIN, INT_MAX, color_to_move, &best_move);
 
+			printf("BEST VALUE: %d \n", best_value);
+			print_move(best_move);
+
+			move_piece(board, best_move);
+
+			print_board(board);
+
+			change_turn();
+
+			continue;
+		}
 
 		print_board(board);
+
 
 		char from[3], to[3];
 
@@ -902,7 +918,7 @@ void game(struct Piece board[ROW][COL]) { int x;
 			}
 
 
-			color_to_move = reverse_color(color_to_move);
+			change_turn();
 		} else {
 			printf("Unable to move that piece there");
 		}
