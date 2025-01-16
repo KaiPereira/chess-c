@@ -40,12 +40,10 @@ void parse_openings(struct Opening *opening) {
 
 			if (!character) break;
 
-			if (character = ',') {
+			if (character == ',') {
  				token++; 
 				continue;
 			}
-
-			printf("MAKES IT HERE");
 
 			switch (token) {
 				case 0:
@@ -65,19 +63,4 @@ void parse_openings(struct Opening *opening) {
 
 		printf("\n");
 	}
-
-	fclose(file);
-
-
-	for (int i = 0; i < line_count; i++) {
-		printf("ECO: %s, NAME: %s, MOVES:", openings[i].eco, openings[i].name);
-		for (int j = 0; j < openings[i].move_count; j++) {
-			printf(" %s", openings[i].moves[j]);
-		}
-
-		printf("\n");
-	}
-
-	// free memory after
-	free(openings);
 }
