@@ -14,6 +14,7 @@
 
 /*** local dependencies ***/
 #include "positions.h"
+#include "openings.h"
 
 
 /***
@@ -75,7 +76,7 @@ bool rook1_b_moved = false;
 bool rook2_b_moved = false;
 bool castle_b = true;
 
-enum Color computer_color = black;
+enum Color computer_color = white;
 enum Color color_to_move = white;
 
 
@@ -836,9 +837,23 @@ void game(struct Piece board[ROW][COL]) { int x;
 	clear_scr();
 
 	while (true) {
+		struct Opening *openings = malloc(MAX_LINES * sizeof(struct Opening));
+
+		if (!openings) {
+			perror("failed to allocate memory");
+			break;
+		}
+
+		parse_openings(openings);
+		
+		// free memory after
+		free(openings);
+
 
 		// Computers turn
 		if (color_to_move == computer_color) {
+
+
 			struct Move best_move;
 
 			int best_value = minimax(board, 3, INT_MIN, INT_MAX, color_to_move, &best_move);

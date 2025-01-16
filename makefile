@@ -1,2 +1,2 @@
 main: main.c
-	gcc -o main main.c positions.c -I.
+	gcc -o main main.c positions.c openings.c -I.
