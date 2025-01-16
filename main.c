@@ -33,8 +33,8 @@ x  ♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
 
 
 /*** definition ***/
-#define STARTING_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-//#define STARTING_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1"
+//#define STARTING_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+#define STARTING_FEN "rnbqkbnr/pppppppp/8/1N6/3n4/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 #define BOARD_SIZE 64
 #define ROW 8
 #define COL 8
@@ -741,8 +741,7 @@ int evaluate(struct Piece board[ROW][COL]) {
 					break;
 			}
 
-			//eval += sign * (position_value + type_value);
-			eval += sign * (type_value);
+			eval += sign * (position_value + type_value);
 		}
 	}
 
@@ -770,7 +769,7 @@ int minimax(struct Piece board[ROW][COL], int depth, int alpha, int beta, enum C
 
 			make_move(temp_board, moves[i]);
 
-			int value = minimax(temp_board, depth - 1, alpha, beta, false, NULL);
+			int value = minimax(temp_board, depth - 1, alpha, beta, reverse_color(color), NULL);
 
 			if (value > max_value) {
 				max_value = value;
@@ -798,7 +797,7 @@ int minimax(struct Piece board[ROW][COL], int depth, int alpha, int beta, enum C
 
 			make_move(temp_board, moves[i]);
 
-			int value = minimax(temp_board, depth - 1, alpha, beta, false, NULL);
+			int value = minimax(temp_board, depth - 1, alpha, beta, reverse_color(color), NULL);
 
 			if (min_value > value) {
 				min_value = value;
@@ -808,7 +807,7 @@ int minimax(struct Piece board[ROW][COL], int depth, int alpha, int beta, enum C
 				}
 			}
 
-			alpha = (alpha > value) ? value : alpha;
+			beta = (value < beta) ? value : beta;
 
 			if (beta <= alpha) {
 				break;
@@ -832,7 +831,7 @@ void game(struct Piece board[ROW][COL]) { int x;
 	while (true) {
 		struct Move best_move;
 
-		int best_value = minimax(board, 4, INT_MIN, INT_MAX, color_to_move, &best_move);
+		int best_value = minimax(board, 3, INT_MIN, INT_MAX, color_to_move, &best_move);
 
 		printf("BEST VALUE: %d \n", best_value);
 		print_move(best_move);
