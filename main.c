@@ -320,14 +320,17 @@ bool pawn_rule(struct Piece board[ROW][COL], struct Move move) {
 
 
 bool knight_rule(struct Piece board[ROW][COL], struct Move move) {
-	int x = move.x;
-	int y = move.y;
-	int pX = move.pX;
-	int pY = move.pY;
+    int x = move.x;
+    int y = move.y;
+    int pX = move.pX;
+    int pY = move.pY;
 
-	if ((abs(x - pX) == 2) && (abs(y - pY) == 1) || (abs(x - pX) == 1) && (abs(x - pY) == 2)) return true;
-
-	else return false;
+    if (((abs(x - pX) == 2) && (abs(y - pY) == 1)) || 
+        ((abs(x - pX) == 1) && (abs(y - pY) == 2))) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 bool bishop_rule(struct Piece board[ROW][COL], struct Move move) {
@@ -829,13 +832,15 @@ void game(struct Piece board[ROW][COL]) { int x;
 	clear_scr();
 
 	while (true) {
-		struct Move best_move;
+		/*struct Move best_move;
 
 		int best_value = minimax(board, 3, INT_MIN, INT_MAX, color_to_move, &best_move);
 
 		printf("BEST VALUE: %d \n", best_value);
-		print_move(best_move);
+		print_move(best_move);*/
 
+		int evaluation = evaluate(board);
+		printf("EVALUATION: %d", evaluation);
 
 
 		print_board(board);
