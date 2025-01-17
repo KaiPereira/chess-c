@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include "openings.h"
@@ -12,7 +13,7 @@ void append_char(char *s, char c) {
 }
 
 void parse_openings() {
-	FILE *file = fopen("openings_test.csv", "r");
+	FILE *file = fopen("openings.csv", "r");
 
 	if (!file) {
 		perror("Error opening file");
@@ -43,13 +44,18 @@ void parse_openings() {
 		char name[sizeof(opening.name)] = {0};
 		char moves_str[sizeof(line)] = {0};
 
+		bool in_title = false;
+
 
 		for (int i = 0; i < MAX_LINE_LENGTH; i++) {
 			char character = line[i];
 
 			if (!character) break;
 
-			if (character == ',') {
+			if (character == '"' && in_title) in_title = false;
+			else if (character == '"') in_title = true;
+
+			if (character == ',' && !in_title) {
  				token++; 
 				continue;
 			}
@@ -84,7 +90,7 @@ void parse_openings() {
 		}
 
 		for (int i = 0; i < opening.move_count; i++) {
-			printf("%s", opening.moves[i]);
+			printf("%s,", opening.moves[i]);
 		}
 		
 
