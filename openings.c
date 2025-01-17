@@ -21,12 +21,8 @@ void parse_openings() {
 
 	char line[MAX_LINE_LENGTH];
 
+	struct Opening *openings = malloc(MAX_LINES  * sizeof(struct Opening));
 
-	struct Opening *openings = malloc(MAX_LINES * sizeof(struct Opening));
-
-	if (!openings) {
-		perror("failed to allocate memory");
-	}
 
 	int line_count = 0;
 
@@ -88,12 +84,11 @@ void parse_openings() {
 				break;
 			}
 		}
-
-		for (int i = 0; i < opening.move_count; i++) {
-			printf("%s,", opening.moves[i]);
-		}
 		
-
 		printf("\n");
 	}
+}
+
+void play_opening() {
+
 }
