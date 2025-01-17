@@ -13,7 +13,7 @@ struct Opening {
 	int move_count;
 };
 
-void parse_openings(struct Opening *openings);
+void parse_openings();
 
 
 #endif

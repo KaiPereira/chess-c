@@ -837,18 +837,7 @@ void game(struct Piece board[ROW][COL]) { int x;
 	clear_scr();
 
 	while (true) {
-		struct Opening *openings = malloc(MAX_LINES * sizeof(struct Opening));
-
-		if (!openings) {
-			perror("failed to allocate memory");
-			break;
-		}
-
-		parse_openings(openings);
-		
-		// free memory after
-		free(openings);
-
+		parse_openings();
 
 		// Computers turn
 		if (color_to_move == computer_color) {
