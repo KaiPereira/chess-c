@@ -31,7 +31,6 @@ void parse_openings() {
 
 	while (fgets(line, sizeof(line), file) && line_count < MAX_LINES) {
 		// Skip the header line
-
 		if (line_count == 0) {
 			line_count++;
 			continue;
@@ -84,7 +83,9 @@ void parse_openings() {
 			}
 		}
 
-		printf("%s", opening.eco);
+		for (int i = 0; i < opening.move_count; i++) {
+			printf("%s", opening.moves[i]);
+		}
 		
 
 		printf("\n");
