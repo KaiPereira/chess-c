@@ -292,6 +292,24 @@ void move_piece(struct Piece board[ROW][COL], struct Move move) {
 	board[move.x][move.y].color = none;
 }
 
+void convert_move(struct Piece board[ROW][COL], struct Move move) {
+	int x = move.x;
+	int y = move.y;
+	int pX = move.pX;
+	int pY = move.pY;
+
+	struct Piece piece = board[x][y];
+
+	enum Color color = piece.color;
+
+	char type_char = get_type_char(piece.type);
+	char to_square = 'a' + move.pY;
+	
+	type_char = color == white ? type_char : toupper(type_char);
+
+	printf("%c%c%d", type_char, to_square, pX);
+}
+
 /*** movegen ***/
 /*** pseudolegality thanks to https://github.com/JDSherbert for some movegen logic ***/
 // en passant is stupid :/
@@ -837,7 +855,7 @@ void game(struct Piece board[ROW][COL]) { int x;
 	clear_scr();
 
 	while (true) {
-		struct Opening *openings = malloc(MAX_LINES * sizeof(struct Opening));
+		/*struct Opening *openings = malloc(MAX_LINES * sizeof(struct Opening));
 
 		if (!openings) {
 			perror("Error allocating memory");
@@ -845,17 +863,10 @@ void game(struct Piece board[ROW][COL]) { int x;
 
 		parse_openings(openings);
 
-		for (int i = 0; i < MAX_LINES && openings[i].move_count > 0; i++) {
-		    printf("Opening %d: %s (%s)\n", i + 1, openings[i].name, openings[i].eco);
-		    for (int j = 0; j < openings[i].move_count; j++) {
-			printf("  Move %d: %s\n", j + 1, openings[i].moves[j]);
-		    }
-		}
-
-		free(openings);
+		free(openings);*/
 
 		// Computers turn
-		if (color_to_move == computer_color) {
+		/*if (color_to_move == computer_color) {
 
 
 			struct Move best_move;
@@ -872,7 +883,7 @@ void game(struct Piece board[ROW][COL]) { int x;
 			change_turn();
 
 			continue;
-		}
+		}*/
 
 		print_board(board);
 
@@ -903,6 +914,8 @@ void game(struct Piece board[ROW][COL]) { int x;
 
 		// Create a move and check it
 		struct Move move = create_move(x, y, pX, pY);
+
+		convert_move(board, move);
 
 		enum Color color = board[x][y].color;
 		enum Type type = board[x][y].type;
