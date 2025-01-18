@@ -837,7 +837,22 @@ void game(struct Piece board[ROW][COL]) { int x;
 	clear_scr();
 
 	while (true) {
-		parse_openings();
+		struct Opening *openings = malloc(MAX_LINES * sizeof(struct Opening));
+
+		if (!openings) {
+			perror("Error allocating memory");
+		}
+
+		parse_openings(openings);
+
+		for (int i = 0; i < MAX_LINES && openings[i].move_count > 0; i++) {
+		    printf("Opening %d: %s (%s)\n", i + 1, openings[i].name, openings[i].eco);
+		    for (int j = 0; j < openings[i].move_count; j++) {
+			printf("  Move %d: %s\n", j + 1, openings[i].moves[j]);
+		    }
+		}
+
+		free(openings);
 
 		// Computers turn
 		if (color_to_move == computer_color) {
