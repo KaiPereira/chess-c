@@ -11,7 +11,7 @@ void append_char(char *s, char c) {
     *s = '\0';
 }
 
-void parse_openings(struct Opening *openings, int max_lines) {
+void parse_openings(struct Opening *openings) {
 	FILE *file = fopen("openings_test.csv", "r");
 
 	if (!file) {
@@ -28,7 +28,7 @@ void parse_openings(struct Opening *openings, int max_lines) {
 			continue;
 		}
 
-		struct Opening *opening = &openings[line_count];
+		struct Opening *opening = &openings[line_count - 1];
 		memset(opening, 0, sizeof(*opening));
 
 		int token = 0;
@@ -80,6 +80,8 @@ void parse_openings(struct Opening *openings, int max_lines) {
 				break;
 			}
 		}
+
+		line_count++;
 	}
 
 	fclose(file);
