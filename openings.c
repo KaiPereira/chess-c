@@ -86,3 +86,33 @@ void parse_openings(struct Opening *openings) {
 
 	fclose(file);
 }
+
+void play_opening(char moves_played[MAX_MOVES][10]) {
+
+	char moves[MAX_MOVES][10] = { "a3", "e5", "h3", "d5" };
+
+
+	int opening = 0;
+	int move_to_play = 0;
+
+	// Look at me comment mom
+
+	// Loop over all openings
+	for (int i = 0; i < MAX_LINES; i++) {
+		// Loop over all the moves in that opening
+		for (int w = 0; w < MAX_MOVES; w++) {
+			// We've gone through all the opening moves
+			if (!moves_played[w]) break;
+
+			// if the opening moves match the moves played
+			// Play the next move in that opening
+			
+			// If any of the moves played don't match the opening, stop
+			if (moves[w] != moves_played[w]) break;
+
+			// If all the moves match and we've gone through all moves played, play the opening
+			opening = i;
+			move_to_play = w + 1;
+		}
+	}
+}
