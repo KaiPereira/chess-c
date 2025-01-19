@@ -92,30 +92,35 @@ void play_opening(/*char moves_played[MAX_MOVES][10]*/) {
 	char moves[MAX_MOVES][10] = { "a3", "e5", "h3", "d5" };
 	char moves_played[MAX_MOVES][10] = { "a3", "e5" };
 
-
 	int opening = 0;
 	int move_to_play = 0;
 
-	printf("sizeof moves: %ld", sizeof(moves));
+	//printf("sizeof moves: %ld", sizeof(moves));
 
 
 	// Look at me comment mom
 	// Loop over all openings
-	for (int i = 0; i < MAX_LINES; i++) {
-		// Loop over all the moves in that opening
-		for (int w = 0; w < MAX_MOVES; w++) {
-			// We've gone through all the opening moves
-			if (!moves_played[w]) break;
+	/*for (int i = 0; i < MAX_LINES; i++) {
+	}*/
 
-			// if the opening moves match the moves played
-			// Play the next move in that opening
-			
-			// If any of the moves played don't match the opening, stop
-			if (moves[w] != moves_played[w]) break;
+	// Loop over all the moves in that opening
+	for (int w = 0; w < MAX_MOVES; w++) {
+		//printf("GOING: %d \n", w);
+		// if the opening moves match the moves played
+		// Play the next move in that opening
+		
+		// If any of the moves played don't match the opening, stop
+		printf("move: %s, move played: %s, status: %d, next move: %s \n", moves[w], moves_played[w], strcmp(moves[w], moves_played[w]) == 0, moves_played[w + 1]);
+		if (strcmp(moves[w], moves_played[w]) != 0) break;
 
-			// If all the moves match and we've gone through all moves played, play the opening
-			opening = i;
+		// If all the moves match and we've gone through all moves played, play the opening
+		if (!moves_played[w + 1]) {
+			opening = 0;
 			move_to_play = w + 1;
+
+			break;
 		}
 	}
+
+	printf("move to play: %d", move_to_play);
 }
