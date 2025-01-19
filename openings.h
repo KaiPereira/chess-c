@@ -15,5 +15,7 @@ struct Opening {
 
 void parse_openings();
 
+void play_opening();
+
 
 #endif

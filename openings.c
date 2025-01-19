@@ -87,16 +87,19 @@ void parse_openings(struct Opening *openings) {
 	fclose(file);
 }
 
-void play_opening(char moves_played[MAX_MOVES][10]) {
+void play_opening(/*char moves_played[MAX_MOVES][10]*/) {
 
 	char moves[MAX_MOVES][10] = { "a3", "e5", "h3", "d5" };
+	char moves_played[MAX_MOVES][10] = { "a3", "e5" };
 
 
 	int opening = 0;
 	int move_to_play = 0;
 
-	// Look at me comment mom
+	printf("sizeof moves: %ld", sizeof(moves));
 
+
+	// Look at me comment mom
 	// Loop over all openings
 	for (int i = 0; i < MAX_LINES; i++) {
 		// Loop over all the moves in that opening
