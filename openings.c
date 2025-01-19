@@ -110,11 +110,10 @@ void play_opening(/*char moves_played[MAX_MOVES][10]*/) {
 		// Play the next move in that opening
 		
 		// If any of the moves played don't match the opening, stop
-		printf("move: %s, move played: %s, status: %d, next move: %s \n", moves[w], moves_played[w], strcmp(moves[w], moves_played[w]) == 0, moves_played[w + 1]);
 		if (strcmp(moves[w], moves_played[w]) != 0) break;
 
 		// If all the moves match and we've gone through all moves played, play the opening
-		if (!moves_played[w + 1]) {
+		if (!moves_played[w + 1][0] != '\0') {
 			opening = 0;
 			move_to_play = w + 1;
 
