@@ -870,13 +870,7 @@ void game(struct Piece board[ROW][COL]) { int x;
 	clear_scr();
 
 	while (true) {
-		//play_opening(moves_played);
-		
-		for (int i = 0; i < MAX_MOVES; i++) {
-			if (strlen(moves_played[i]) == 0) break;
-
-			printf("%s", moves_played[i]);
-		}
+		play_opening(moves_played);
 
 		// Computers turn
 		/*if (color_to_move == computer_color) {
