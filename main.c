@@ -313,7 +313,7 @@ void convert_move(struct Piece board[ROW][COL], struct Move move, char formatted
 
 	formatted_move[0] = type_char;
 	formatted_move[1] = to_square;
-	formatted_move[2] = '1' + pX;
+	formatted_move[2] = '0' + pX;
 	formatted_move[3] = '\0';
 }
 
@@ -870,7 +870,13 @@ void game(struct Piece board[ROW][COL]) { int x;
 	clear_scr();
 
 	while (true) {
-		play_opening(moves_played);
+		//play_opening(moves_played);
+		
+		for (int i = 0; i < MAX_MOVES; i++) {
+			if (strlen(moves_played[i]) == 0) break;
+
+			printf("%s", moves_played[i]);
+		}
 
 		// Computers turn
 		/*if (color_to_move == computer_color) {
