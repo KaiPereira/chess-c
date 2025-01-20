@@ -79,8 +79,9 @@ bool castle_b = true;
 enum Color computer_color = white;
 enum Color color_to_move = white;
 
-char moves_play[10][MAX_MOVES];
-int move_count = 0;
+// move history for opening and other shenanigans
+char moves_played[10][MAX_MOVES];
+int move_history_count = 0;
 
 
 /*** General Helper Functions ***/
@@ -295,7 +296,7 @@ void move_piece(struct Piece board[ROW][COL], struct Move move) {
 	board[move.x][move.y].color = none;
 }
 
-void convert_move(struct Piece board[ROW][COL], struct Move move) {
+void convert_move(struct Piece board[ROW][COL], struct Move move, char *formatted_move[10]) {
 	int x = move.x;
 	int y = move.y;
 	int pX = move.pX;
@@ -310,7 +311,11 @@ void convert_move(struct Piece board[ROW][COL], struct Move move) {
 	
 	type_char = color == white ? type_char : toupper(type_char);
 
-	printf("%c%c%d", type_char, to_square, pX);
+	&formatted_move = type_char + to_square + pX;
+}
+
+void add_move_history(struct Piece board[ROW][COL], struct Move move) {
+	moves_played[move_history_count] = convert_move(board, move);
 }
 
 /*** movegen ***/
@@ -862,8 +867,6 @@ void game(struct Piece board[ROW][COL]) { int x;
 
 		// Computers turn
 		/*if (color_to_move == computer_color) {
-
-
 			struct Move best_move;
 
 			int best_value = minimax(board, 3, INT_MIN, INT_MAX, color_to_move, &best_move);
