@@ -79,6 +79,9 @@ bool castle_b = true;
 enum Color computer_color = white;
 enum Color color_to_move = white;
 
+char moves_play[10][MAX_MOVES];
+int move_count = 0;
+
 
 /*** General Helper Functions ***/
 void clear_scr() {
@@ -855,16 +858,6 @@ void game(struct Piece board[ROW][COL]) { int x;
 	clear_scr();
 
 	while (true) {
-		/*struct Opening *openings = malloc(MAX_LINES * sizeof(struct Opening));
-
-		if (!openings) {
-			perror("Error allocating memory");
-		}
-
-		parse_openings(openings);
-
-		free(openings);*/
-
 		play_opening();
 
 		// Computers turn
