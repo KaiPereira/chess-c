@@ -135,15 +135,22 @@ void play_opening(char moves_played[MAX_MOVES][10]) {
 
 				// if it's a notation like e4 and not Pe4
 				if (strlen(openings[i].moves[w]) == 2) {
-					memmove(moves_played[w], moves_played[w] + 1, strlen(moves_played[w]));
+					char move_played[10];
 
-					printf("MOVE: %s \n", moves_played[w]);
+					memmove(move_played, moves_played[w] + 1, strlen(moves_played[w]));
+
+					if (strcmp(openings[i].moves[w], move_played) != 0) break;
+
+					if (!moves_played[w + 1][0] != '\0') {
+						opening = i;
+						move_to_play = w + 1;
+
+						break;
+					}
 				}
 			}
 		}
 	}
-
-	printf("Name: %s, move: %s", openings[opening].name, openings[opening].moves[move_to_play]);
 
 	free(openings);
 }
