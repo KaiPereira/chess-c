@@ -105,12 +105,11 @@ void play_opening(char moves_played[MAX_MOVES][10]) {
 
 	// Look at me comment mom
 	// Loop over all openings
-	for (int i = 0; i < MAX_LINES; i++) {
+	/*for (int i = 0; i < MAX_LINES; i++) {
 		// Loop over all the moves in that opening
 		for (int w = 0; w < MAX_MOVES; w++) {
 			// if the opening moves match the moves played
 			// Play the next move in that opening
-			printf("Move: %s \n", moves_played[w]);
 			
 			// If any of the moves played don't match the opening, stop
 			if (strcmp(openings[i].moves[w], moves_played[w]) != 0) break;
@@ -121,6 +120,21 @@ void play_opening(char moves_played[MAX_MOVES][10]) {
 				move_to_play = w + 1;
 
 				break;
+			}
+		}
+	}*/
+	
+	// e4 e5 
+	// Pe4
+	for (int i = 0; i < MAX_LINES; i++) {
+		if (strlen(openings[i].name) == 0) {
+			for (int w = 0; w < MAX_MOVES; w++) {
+				if (strlen(moves_played[w]) == 0) break;
+
+				// if it's a notation like e4 and not Pe4
+				if (strlen(openings[i].moves[w]) == 2) {
+					memmove(openings[i].moves[w], openings[i].moves[w] + 1, strlen(openings[i].moves[w]));
+				}
 			}
 		}
 	}
