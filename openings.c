@@ -127,13 +127,17 @@ void play_opening(char moves_played[MAX_MOVES][10]) {
 	// e4 e5 
 	// Pe4
 	for (int i = 0; i < MAX_LINES; i++) {
-		if (strlen(openings[i].name) == 0) {
+		if (strlen(openings[i].name) != 0) {
 			for (int w = 0; w < MAX_MOVES; w++) {
 				if (strlen(moves_played[w]) == 0) break;
 
+				printf("MADE IT HERE: %ld \n", strlen(openings[i].moves[w]));
+
 				// if it's a notation like e4 and not Pe4
 				if (strlen(openings[i].moves[w]) == 2) {
-					memmove(openings[i].moves[w], openings[i].moves[w] + 1, strlen(openings[i].moves[w]));
+					memmove(moves_played[w], moves_played[w] + 1, strlen(moves_played[w]));
+
+					printf("MOVE: %s \n", moves_played[w]);
 				}
 			}
 		}
