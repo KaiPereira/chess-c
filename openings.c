@@ -89,7 +89,7 @@ void parse_openings(struct Opening *openings) {
 
 void play_opening(char moves_played[MAX_MOVES][10]) {
 	if (strlen(moves_played[0]) == 0) {
-		printf("e2e4 \n");
+		//printf("e2e4 \n");
 	}
 
 	int opening = 0;
@@ -128,10 +128,14 @@ void play_opening(char moves_played[MAX_MOVES][10]) {
 	// Pe4
 	for (int i = 0; i < MAX_LINES; i++) {
 		if (strlen(openings[i].name) != 0) {
-			for (int w = 0; w < MAX_MOVES; w++) {
-				if (strlen(moves_played[w]) == 0) break;
+			printf("Opening: %s  ", openings[i].name);
 
-				char move_played[10];
+			for (int w = 0; w < MAX_MOVES; w++) {
+				printf("%s,", openings[i].moves[w]);
+
+				if (strlen(openings[i].moves[w]) == 0) break;
+
+				/*char move_played[10];
 
 				// if it's a notation like e4 and not Pe4
 				// Truncate the move we played to not include P or whatver if the opening move is not 3 characters
@@ -144,8 +148,10 @@ void play_opening(char moves_played[MAX_MOVES][10]) {
 					move_to_play = w + 1;
 
 					break;
-				}
+				}*/
 			}
+
+			printf("\n");
 		}
 	}
 
