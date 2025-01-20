@@ -132,30 +132,29 @@ void play_opening(char moves_played[MAX_MOVES][10]) {
 
 			for (int w = 0; w < MAX_MOVES; w++) {
 				if (strlen(openings[i].moves[w]) == 0) break;
-				printf("STUFF: %s %s", openings[i].moves[w], moves_played[w]);
+				//printf("STUFF: %s %s", openings[i].moves[w], moves_played[w]);
 
-				//char move_played[10];
+				char move_played[10];
 
 				// if it's a notation like e4 and not Pe4
 				// Truncate the move we played to not include P or whatver if the opening move is not 3 characters
-				//if (strlen(openings[i].moves[w]) == 2) memmove(move_played, moves_played[w] + 1, strlen(moves_played[w]));
+				if (strlen(openings[i].moves[w]) == 2) memmove(move_played, moves_played[w] + 1, strlen(moves_played[w]));
 
-
-				/*if (strcmp(openings[i].moves[w], moves_played[w]) != 0) break;
+				if (strcmp(openings[i].moves[w], moves_played[w]) != 0) break;
 
 				if (!moves_played[w + 1][0] != '\0') {
 					opening = i;
 					move_to_play = w + 1;
 
 					break;
-				}*/
+				}
 			}
 
-			printf("\n");
+			//printf("\n");
 		}
 	}
 
-	//printf("Name: %s, move: %s", openings[opening].name, openings[opening].moves[move_to_play]);
+	printf("Name: %s, move: %s", openings[opening].name, openings[opening].moves[move_to_play]);
 
 	free(openings);
 }
