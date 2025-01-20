@@ -80,7 +80,7 @@ enum Color computer_color = white;
 enum Color color_to_move = white;
 
 // move history for opening and other shenanigans
-char moves_played[10][MAX_MOVES];
+char moves_played[MAX_MOVES][10];
 int move_history_count = 0;
 
 
@@ -296,7 +296,7 @@ void move_piece(struct Piece board[ROW][COL], struct Move move) {
 	board[move.x][move.y].color = none;
 }
 
-void convert_move(struct Piece board[ROW][COL], struct Move move, char *formatted_move[10]) {
+void convert_move(struct Piece board[ROW][COL], struct Move move, char formatted_move[10]) {
 	int x = move.x;
 	int y = move.y;
 	int pX = move.pX;
@@ -311,11 +311,18 @@ void convert_move(struct Piece board[ROW][COL], struct Move move, char *formatte
 	
 	type_char = color == white ? type_char : toupper(type_char);
 
-	&formatted_move = type_char + to_square + pX;
+	formatted_move[0] = type_char;
+	formatted_move[1] = to_square;
+	formatted_move[2] = pX;
+	formatted_move[3] = '\0';
 }
 
 void add_move_history(struct Piece board[ROW][COL], struct Move move) {
-	moves_played[move_history_count] = convert_move(board, move);
+	char formatted_move[10];
+
+	convert_move(board, move, formatted_move);
+
+	strncpy(moves_played[move_history_count], formatted_move, sizeof(moves_played[0]));
 }
 
 /*** movegen ***/
@@ -863,7 +870,8 @@ void game(struct Piece board[ROW][COL]) { int x;
 	clear_scr();
 
 	while (true) {
-		play_opening();
+		char move_history[MAX_MOVES][10] = { "a3", "e5" };
+		play_opening(move_history);
 
 		// Computers turn
 		/*if (color_to_move == computer_color) {
@@ -946,6 +954,7 @@ void game(struct Piece board[ROW][COL]) { int x;
 			}
 
 
+			add_move_history(board, move);
 			change_turn();
 		} else {
 			printf("Unable to move that piece there");

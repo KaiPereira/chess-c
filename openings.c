@@ -87,9 +87,7 @@ void parse_openings(struct Opening *openings) {
 	fclose(file);
 }
 
-void play_opening(/*char moves_played[MAX_MOVES][10]*/) {
-	char moves_played[MAX_MOVES][10] = { "a3", "e5" };
-
+void play_opening(char moves_played[MAX_MOVES][10]) {
 	int opening = 0;
 	int move_to_play = 0;
 
