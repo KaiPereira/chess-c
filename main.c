@@ -308,12 +308,12 @@ void convert_move(struct Piece board[ROW][COL], struct Move move, char formatted
 
 	char type_char = get_type_char(piece.type);
 	char to_square = 'a' + move.pY;
-	
-	type_char = color == white ? type_char : toupper(type_char);
+
+	type_char = color == white ? toupper(type_char) : type_char;
 
 	formatted_move[0] = type_char;
 	formatted_move[1] = to_square;
-	formatted_move[2] = pX;
+	formatted_move[2] = '1' + pX;
 	formatted_move[3] = '\0';
 }
 
@@ -870,8 +870,7 @@ void game(struct Piece board[ROW][COL]) { int x;
 	clear_scr();
 
 	while (true) {
-		char move_history[MAX_MOVES][10] = { "a3", "e5" };
-		play_opening(move_history);
+		play_opening(moves_played);
 
 		// Computers turn
 		/*if (color_to_move == computer_color) {
@@ -940,6 +939,8 @@ void game(struct Piece board[ROW][COL]) { int x;
 				continue;
 			}
 
+			add_move_history(board, move);
+
 			make_move(board, move);
 
 			// Change castling rights
@@ -954,7 +955,6 @@ void game(struct Piece board[ROW][COL]) { int x;
 			}
 
 
-			add_move_history(board, move);
 			change_turn();
 		} else {
 			printf("Unable to move that piece there");

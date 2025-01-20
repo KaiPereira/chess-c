@@ -88,9 +88,12 @@ void parse_openings(struct Opening *openings) {
 }
 
 void play_opening(char moves_played[MAX_MOVES][10]) {
+	if (strlen(moves_played[0]) == 0) {
+		printf("e2e4 \n");
+	}
+
 	int opening = 0;
 	int move_to_play = 0;
-
 
 	struct Opening *openings = malloc(MAX_LINES * sizeof(struct Opening));
 
@@ -100,8 +103,6 @@ void play_opening(char moves_played[MAX_MOVES][10]) {
 
 	parse_openings(openings);
 
-
-
 	// Look at me comment mom
 	// Loop over all openings
 	for (int i = 0; i < MAX_LINES; i++) {
@@ -109,6 +110,7 @@ void play_opening(char moves_played[MAX_MOVES][10]) {
 		for (int w = 0; w < MAX_MOVES; w++) {
 			// if the opening moves match the moves played
 			// Play the next move in that opening
+			printf("Move: %s \n", moves_played[w]);
 			
 			// If any of the moves played don't match the opening, stop
 			if (strcmp(openings[i].moves[w], moves_played[w]) != 0) break;
