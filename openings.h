@@ -15,7 +15,7 @@ struct Opening {
 
 void parse_openings();
 
-void play_opening();
+void play_opening(char moves_played[MAX_MOVES][10], char opening_move[10]);
 
 
 #endif

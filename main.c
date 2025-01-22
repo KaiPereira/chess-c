@@ -296,7 +296,7 @@ void move_piece(struct Piece board[ROW][COL], struct Move move) {
 	board[move.x][move.y].color = none;
 }
 
-void convert_move(struct Piece board[ROW][COL], struct Move move, char formatted_move[10]) {
+void convert_to_algebraic(struct Piece board[ROW][COL], struct Move move, char formatted_move[10]) {
 	int x = move.x;
 	int y = move.y;
 	int pX = move.pX;
@@ -315,14 +315,6 @@ void convert_move(struct Piece board[ROW][COL], struct Move move, char formatted
 	formatted_move[1] = to_square;
 	formatted_move[2] = '0' + pX;
 	formatted_move[3] = '\0';
-}
-
-void add_move_history(struct Piece board[ROW][COL], struct Move move) {
-	char formatted_move[10];
-
-	convert_move(board, move, formatted_move);
-
-	strncpy(moves_played[move_history_count], formatted_move, sizeof(moves_played[0]));
 }
 
 /*** movegen ***/
@@ -478,6 +470,61 @@ bool king_rule(struct Piece board[ROW][COL], struct Move move) {
 
 
 /*** chess/pins/attacks ***/
+void convert_from_algebraic(struct Piece board[ROW][COL], char move[10]) {
+	// Pe4
+	
+	if (strlen(move) == 3) {
+		struct Move full_move;
+
+		enum Type type = get_type_enum(tolower(move[0]));
+
+		for (int x = 0; x < ROW; x++) {
+			for (int y = 0; y < COL; y++) {
+				if (board[x][y].type != type) break;
+
+				struct Move movement = create_move(x, y, row_num(move[1]), move[2] - '0');
+
+				bool can_move = false;
+
+				switch(type) {
+					case pawn:
+						can_move = pawn_rule(board, movement);
+						break;
+					case knight:
+						can_move = knight_rule(board, movement);
+						break;
+					case bishop:
+						can_move = bishop_rule(board, movement);
+						break;
+					case rook:
+						can_move = rook_rule(board, movement);
+						break;
+					case queen:
+						can_move = queen_rule(board, movement);
+						break;
+					case king:
+						can_move = king_rule(board, movement);
+						break;
+				}
+
+				if (can_move) {
+					full_move = movement;
+				}
+			}
+		}
+
+		print_move(full_move);
+	}
+}
+
+void add_move_history(struct Piece board[ROW][COL], struct Move move) {
+	char formatted_move[10];
+
+	convert_to_algebraic(board, move, formatted_move);
+
+	strncpy(moves_played[move_history_count], formatted_move, sizeof(moves_played[0]));
+}
+
 bool king_attacked(struct Piece board[ROW][COL]) {
 	int x, y;
 
@@ -870,7 +917,10 @@ void game(struct Piece board[ROW][COL]) { int x;
 	clear_scr();
 
 	while (true) {
-		play_opening(moves_played);
+		char opening_move[10];
+		play_opening(moves_played, opening_move);
+
+		convert_from_algebraic(board, opening_move);
 
 		// Computers turn
 		/*if (color_to_move == computer_color) {

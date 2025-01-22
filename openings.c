@@ -87,7 +87,7 @@ void parse_openings(struct Opening *openings) {
 	fclose(file);
 }
 
-void play_opening(char moves_played[MAX_MOVES][10]) {
+void play_opening(char moves_played[MAX_MOVES][10], char opening_move[10]) {
 	int opening = 0;
 	int move = 0;
 
@@ -122,6 +122,9 @@ void play_opening(char moves_played[MAX_MOVES][10]) {
 
 
 	printf("Name: %s, move: %s", openings[opening].name, openings[opening].moves[move]);
+
+	strcpy(opening_move,  openings[opening].moves[move]);
+	strcpy(opening_move,  openings[opening].moves[move]);
 
 	free(openings);
 }
