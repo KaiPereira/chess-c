@@ -93,7 +93,7 @@ void play_opening(char moves_played[MAX_MOVES][10]) {
 	}
 
 	int opening = 0;
-	int move_to_play = 0;
+	int move = 0;
 
 	struct Opening *openings = malloc(MAX_LINES * sizeof(struct Opening));
 
@@ -103,54 +103,21 @@ void play_opening(char moves_played[MAX_MOVES][10]) {
 
 	parse_openings(openings);
 
-	// Look at me comment mom
-	// Loop over all openings
-	/*for (int i = 0; i < MAX_LINES; i++) {
-		// Loop over all the moves in that opening
-		for (int w = 0; w < MAX_MOVES; w++) {
-			// if the opening moves match the moves played
-			// Play the next move in that opening
-			
-			// If any of the moves played don't match the opening, stop
-			if (strcmp(openings[i].moves[w], moves_played[w]) != 0) break;
-
-			// If all the moves match and we've gone through all moves played, play the opening
-			if (!moves_played[w + 1][0] != '\0') {
-				opening = i;
-				move_to_play = w + 1;
-
-				break;
-			}
-		}
-	}*/
-	
-	// e4 e5 
-	// Pe4
 	for (int i = 0; i < MAX_LINES; i++) {
 		if (strlen(openings[i].name) == 0) break;
 
-		for (int w = 0; w < MAX_MOVES; w++) {
-			if (strlen(openings[i].moves[w]) == 0) break;
-			//printf("STUFF: %s %s", openings[i].moves[w], moves_played[w]);
+		for (int j = 0; j < MAX_MOVES; j++) {
+			if (strcmp(openings[i].moves[j], moves_played[j]) != 0) break;
 
-			char move_played[10];
-
-			// if it's a notation like e4 and not Pe4
-			// Truncate the move we played to not include P or whatver if the opening move is not 3 characters
-			if (strlen(openings[i].moves[w]) == 2) memmove(move_played, moves_played[w] + 1, strlen(moves_played[w]));
-
-			if (strcmp(openings[i].moves[w], moves_played[w]) != 0) break;
-
-			if (!moves_played[w + 1][0] != '\0') {
+			if (strlen(moves_played[j + 1]) == 0) {
 				opening = i;
-				move_to_play = w + 1;
-
-				break;
+				move = j + 1;
 			}
 		}
 	}
 
-	printf("Name: %s, move: %s", openings[opening].name, openings[opening].moves[move_to_play]);
+
+	printf("Name: %s, move: %s", openings[opening].name, openings[opening].moves[move]);
 
 	free(openings);
 }
