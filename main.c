@@ -473,6 +473,8 @@ bool king_rule(struct Piece board[ROW][COL], struct Move move) {
 void convert_from_algebraic(struct Piece board[ROW][COL], char move[10]) {
 	// Pe4
 	
+	printf("\n MOVEMENT: %s, LENGTH: %ld \n", move, strlen(move));
+
 	if (strlen(move) == 3) {
 		struct Move full_move;
 
