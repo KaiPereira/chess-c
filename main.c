@@ -311,14 +311,10 @@ void convert_move(struct Piece board[ROW][COL], struct Move move, char formatted
 
 	type_char = color == white ? toupper(type_char) : type_char;
 
-	/*formatted_move[0] = type_char;
+	formatted_move[0] = type_char;
 	formatted_move[1] = to_square;
 	formatted_move[2] = '0' + pX;
-	formatted_move[3] = '\0';*/
-
-	formatted_move[0] = to_square;
-	formatted_move[1] = '0' + pX;
-	formatted_move[2] = '\0';
+	formatted_move[3] = '\0';
 }
 
 void add_move_history(struct Piece board[ROW][COL], struct Move move) {

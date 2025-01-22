@@ -107,7 +107,15 @@ void play_opening(char moves_played[MAX_MOVES][10]) {
 		if (strlen(openings[i].name) == 0) break;
 
 		for (int j = 0; j < MAX_MOVES; j++) {
-			if (strcmp(openings[i].moves[j], moves_played[j]) != 0) break;
+			char trunc_move[10];
+			
+			if (strlen(openings[i].moves[j]) == 2) {
+				memmove(trunc_move, moves_played[j] + 1, strlen(moves_played[j]));
+
+				if (strcmp(openings[i].moves[j], trunc_move) != 0) break;
+			} else {
+				if (strcmp(openings[i].moves[j], moves_played[j]) != 0) break;
+			}
 
 			if (strlen(moves_played[j + 1]) == 0) {
 				opening = i;
