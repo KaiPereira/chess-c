@@ -88,10 +88,6 @@ void parse_openings(struct Opening *openings) {
 }
 
 void play_opening(char moves_played[MAX_MOVES][10]) {
-	if (strlen(moves_played[0]) == 0) {
-		//printf("e2e4 \n");
-	}
-
 	int opening = 0;
 	int move = 0;
 
