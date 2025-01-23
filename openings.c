@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <ctype.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,6 +10,13 @@ void append_char(char *s, char c) {
 
     *s++ = c;
     *s = '\0';
+}
+
+void trim(char *str) {
+    while (isspace(*str)) str++;
+    char *end = str + strlen(str) - 1;
+    while (end > str && isspace(*end)) end--;
+    *(end + 1) = '\0';
 }
 
 void parse_openings(struct Opening *openings) {
@@ -99,9 +107,7 @@ void play_opening(char moves_played[MAX_MOVES][10], char opening_move[10]) {
 
 	parse_openings(openings);
 
-	for (int i = 0; i < MAX_LINES; i++) {
-		if (strlen(openings[i].name) == 0) break;
-
+	for (int i = 0; i < MAX_LINES && strlen(openings[i].name); i++) {
 		for (int j = 0; j < MAX_MOVES; j++) {
 			char trunc_move[10];
 			
@@ -122,9 +128,10 @@ void play_opening(char moves_played[MAX_MOVES][10], char opening_move[10]) {
 
 
 	printf("Name: %s, move: %s", openings[opening].name, openings[opening].moves[move]);
+	
+	trim(openings[opening].moves[move]);
 
-	strcpy(opening_move,  openings[opening].moves[move]);
-	strcpy(opening_move,  openings[opening].moves[move]);
+	strcpy(opening_move, openings[opening].moves[move]);
 
 	free(openings);
 }

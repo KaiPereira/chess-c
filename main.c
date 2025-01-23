@@ -470,11 +470,7 @@ bool king_rule(struct Piece board[ROW][COL], struct Move move) {
 
 
 /*** chess/pins/attacks ***/
-void convert_from_algebraic(struct Piece board[ROW][COL], char move[10]) {
-	// Pe4
-	
-	printf("\n MOVEMENT: %s, LENGTH: %ld \n", move, strlen(move));
-
+struct Move convert_from_algebraic(struct Piece board[ROW][COL], char move[10]) {
 	if (strlen(move) == 3) {
 		struct Move full_move;
 
@@ -515,7 +511,7 @@ void convert_from_algebraic(struct Piece board[ROW][COL], char move[10]) {
 			}
 		}
 
-		print_move(full_move);
+		return full_move;
 	}
 }
 
@@ -922,7 +918,8 @@ void game(struct Piece board[ROW][COL]) { int x;
 		char opening_move[10];
 		play_opening(moves_played, opening_move);
 
-		convert_from_algebraic(board, opening_move);
+		struct Move converted_move = convert_from_algebraic(board, opening_move);
+		print_move(converted_move);
 
 		// Computers turn
 		/*if (color_to_move == computer_color) {
