@@ -2,6 +2,7 @@ ECO,name,moves
 B00,King's Pawn Opening; B00,e4
 A40,Queen's Pawn Opening; A40,d4
 A00,Anderssen's Opening,a3
+B20,Sicilian Defense; B20,e4 c5
 A00,"Polish Gambit, Anderssen's Opening",a3 a5 b4
 A00,Creepy Crawly Formation,a3 e5 h3 d5
 A00,Andersspike,a3 g6 g4
@@ -1213,7 +1214,6 @@ B00,"Naselwaus Variation, Owen's Defense",e4 b6 d4 Bb7 Bg5
 B00,"Wind Gambit, Owen Defense",e4 b6 d4 Bb7 f3 e5
 B00,"Smith Gambit, Owen Defense",e4 b6 d4 Bb7 Nf3
 B00,"Hekili-Loa Gambit, Owen Defense",e4 b6 d4 c5 dxc5 Nc6
-B20,Sicilian Defense; B20,e4 c5
 B20,"Mengarini Gambit, Sicilian",e4 c5 a3
 B20,"Mengarini Gambit, Sicilian",e4 c5 a3 Nc6 b4
 B20,"Snyder Variation, Sicilian",e4 c5 b3

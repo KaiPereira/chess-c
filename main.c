@@ -941,7 +941,8 @@ int minimax(struct Piece board[ROW][COL], int depth, int alpha, int beta, enum C
 }
 
 /*** gameloop ***/
-void game(struct Piece board[ROW][COL]) { int x;
+void game(struct Piece board[ROW][COL]) { 
+	int x;
 	int y;
 	int pX;
 	int pY;
@@ -955,7 +956,6 @@ void game(struct Piece board[ROW][COL]) { int x;
 		play_opening(moves_played, opening_move);
 
 		struct Move converted_move = convert_from_algebraic(board, opening_move);
-		print_move(converted_move);
 
 		// Computers turn
 		/*if (color_to_move == computer_color) {
