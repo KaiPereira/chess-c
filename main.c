@@ -83,6 +83,8 @@ enum Color color_to_move = white;
 char moves_played[MAX_MOVES][10];
 int move_history_count = 0;
 
+bool is_opening = true;
+
 
 /*** General Helper Functions ***/
 void clear_scr() {
@@ -952,13 +954,24 @@ void game(struct Piece board[ROW][COL]) {
 	clear_scr();
 
 	while (true) {
-		char opening_move[10];
-		play_opening(moves_played, opening_move);
-
-		struct Move converted_move = convert_from_algebraic(board, opening_move);
 
 		// Computers turn
-		/*if (color_to_move == computer_color) {
+		if (color_to_move == computer_color) {
+			if (is_opening) {
+				char opening_move[10];
+				play_opening(moves_played, opening_move);
+
+				if (strlen(opening_move) != 0) {
+					struct Move converted_move = convert_from_algebraic(board, opening_move);
+
+					move_piece(board, converted_move);
+
+					change_turn();
+
+					continue;
+				}
+			}
+			
 			struct Move best_move;
 
 			int best_value = minimax(board, 3, INT_MIN, INT_MAX, color_to_move, &best_move);
@@ -973,7 +986,7 @@ void game(struct Piece board[ROW][COL]) {
 			change_turn();
 
 			continue;
-		}*/
+		}
 
 		print_board(board);
 
