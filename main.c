@@ -471,18 +471,20 @@ bool king_rule(struct Piece board[ROW][COL], struct Move move) {
 
 /*** chess/pins/attacks ***/
 struct Move convert_from_algebraic(struct Piece board[ROW][COL], char move[10]) {
-	if (strlen(move) == 3) {
-		struct Move full_move;
+	int move_len = strlen(move);
 
+	struct Move opening_move = create_move(0, 0, 0, 0);
+
+	if (move_len == 3) {
+		int dest_col = move[1] - 'a';
+		int dest_row = 8 - (move[2] - '0');
 		enum Type type = get_type_enum(tolower(move[0]));
 
 		for (int x = 0; x < ROW; x++) {
 			for (int y = 0; y < COL; y++) {
-				if (board[x][y].type != type) break;
+				struct Move movement = create_move(x, y, dest_row, dest_col);
 
-				struct Move movement = create_move(x, y, row_num(move[1]), move[2] - '0');
-
-				bool can_move = false;
+				bool can_move;
 
 				switch(type) {
 					case pawn:
@@ -505,14 +507,48 @@ struct Move convert_from_algebraic(struct Piece board[ROW][COL], char move[10]) 
 						break;
 				}
 
-				if (can_move) {
-					full_move = movement;
-				}
+				if (can_move) opening_move = movement;
 			}
 		}
+	} else if (move_len == 2) {
+		int dest_col = move[0] - 'a';
+		int dest_row = 8 - (move[1] - '0');
+		
+		for (int x = 0; x < ROW; x++) {
+			for (int y = 0; y < COL; y++) {
+				struct Move movement = create_move(x, y, dest_row, dest_col);
 
-		return full_move;
+				enum Type type = board[x][y].type;
+
+				bool can_move;
+
+				switch(type) {
+					case pawn:
+						can_move = pawn_rule(board, movement);
+						break;
+					case knight:
+						can_move = knight_rule(board, movement);
+						break;
+					case bishop:
+						can_move = bishop_rule(board, movement);
+						break;
+					case rook:
+						can_move = rook_rule(board, movement);
+						break;
+					case queen:
+						can_move = queen_rule(board, movement);
+						break;
+					case king:
+						can_move = king_rule(board, movement);
+						break;
+				}
+
+				if (can_move) opening_move = movement;
+			}
+		}
 	}
+
+	return opening_move;
 }
 
 void add_move_history(struct Piece board[ROW][COL], struct Move move) {
