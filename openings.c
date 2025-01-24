@@ -108,7 +108,7 @@ void play_opening(char moves_played[MAX_MOVES][10], char opening_move[10]) {
 	parse_openings(openings);
 
 	for (int i = 0; i < MAX_LINES && strlen(openings[i].name); i++) {
-		printf("%d \n", i);
+		//printf("%d \n", i);
 		for (int j = 0; j < MAX_MOVES; j++) {
 			char trunc_move[10];
 			
@@ -128,7 +128,7 @@ void play_opening(char moves_played[MAX_MOVES][10], char opening_move[10]) {
 	}
 
 
-	printf("Name: %s, move: %s", openings[opening].name, openings[opening].moves[move]);
+	//printf("Name: %s, move: %s", openings[opening].name, openings[opening].moves[move]);
 	
 	trim(openings[opening].moves[move]);
 

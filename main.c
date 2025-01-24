@@ -523,7 +523,7 @@ struct Move convert_from_algebraic(struct Piece board[ROW][COL], char move[10]) 
 
 				struct Move movement = create_move(x, y, dest_row, dest_col);
 
-				printf("%d, %d, %d, %d \n", x, y, dest_row, dest_col);
+				//printf("%d, %d, %d, %d \n", x, y, dest_row, dest_col);
 
 				enum Type type = board[x][y].type;
 
@@ -960,7 +960,7 @@ void game(struct Piece board[ROW][COL]) {
 
 	while (true) {
 
-		char opening_move[10];
+		/*char opening_move[10];
 		play_opening(moves_played, opening_move);
 
 		if (strlen(opening_move) != 0) {
@@ -968,11 +968,11 @@ void game(struct Piece board[ROW][COL]) {
 
 			printf("\n");
 			print_move(converted_move);
-		}
+		}*/
 
 		// Computers turn
-		/*if (color_to_move == computer_color) {
-			if (is_opening) {
+		if (color_to_move == computer_color) {
+			/*if (is_opening) {
 				char opening_move[10];
 				play_opening(moves_played, opening_move);
 
@@ -985,7 +985,7 @@ void game(struct Piece board[ROW][COL]) {
 
 					continue;
 				}
-			}
+			}*/
 			
 			struct Move best_move;
 
@@ -1001,7 +1001,7 @@ void game(struct Piece board[ROW][COL]) {
 			change_turn();
 
 			continue;
-		}*/
+		}
 
 		print_board(board);
 
@@ -1052,7 +1052,7 @@ void game(struct Piece board[ROW][COL]) {
 				continue;
 			}
 
-			add_move_history(board, move);
+			//add_move_history(board, move);
 
 			make_move(board, move);
 
