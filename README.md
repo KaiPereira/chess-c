@@ -2,10 +2,4 @@
 
 CheSSH is a terminal based SSH game of chess you can play with friends or against bots. Right now I haven't quite completed the ssh functinonality but the full game of chess and the bot is complete at a barebones level.
 
-## Things I could/could've improved
-
-Used an enum for moves, because I use matrix coordinates like board[x][y]
-
-## Things to remember to do
-- Participate in hack club qr program and submit this as a qr code c program https://saycheese.hackclub.com/
-- Submit to hackclub high seas by 31st of jan
+The bot probably plays at about a 1300 ELO rating as of now, but because I made the game from scratch, it allows room for it to be as strong as 2500 rated. I can't wait to add multiplayer and hopefully I'll be able to add a highseas update before it ends!
