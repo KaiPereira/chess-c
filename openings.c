@@ -20,7 +20,7 @@ void trim(char *str) {
 }
 
 void parse_openings(struct Opening *openings) {
-	FILE *file = fopen("openings.csv", "r");
+	FILE *file = fopen("openings_test.csv", "r");
 
 	if (!file) {
 		perror("Error opening file");
@@ -110,9 +110,12 @@ void play_opening(char moves_played[MAX_MOVES][10], char opening_move[10]) {
 	for (int i = 0; i < MAX_LINES && strlen(openings[i].name); i++) {
 		printf("%d \n", i);
 		for (int j = 0; j < MAX_MOVES; j++) {
+			trim(openings[i].moves[j]);
+			printf("MOVE: %s,%s |", openings[i].moves[j], moves_played[j]);
+
 			char trunc_move[10];
 			
-			if (strlen(openings[i].moves[j]) == 2) {
+			if (strlen(openings[i].moves[j]) == 3) {
 				memmove(trunc_move, moves_played[j] + 1, strlen(moves_played[j]));
 
 				if (strcmp(openings[i].moves[j], trunc_move) != 0) break;
