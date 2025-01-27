@@ -960,19 +960,20 @@ void game(struct Piece board[ROW][COL]) {
 
 	while (true) {
 
-		/*char opening_move[10];
+		char opening_move[10];
 		play_opening(moves_played, opening_move);
 
 		if (strlen(opening_move) != 0) {
+			printf("opening: %s \n", opening_move);
 			struct Move converted_move = convert_from_algebraic(board, opening_move);
 
 			printf("\n");
 			print_move(converted_move);
-		}*/
+		}
 
 		// Computers turn
-		if (color_to_move == computer_color) {
-			/*if (is_opening) {
+		/*if (color_to_move == computer_color) {
+			if (is_opening) {
 				char opening_move[10];
 				play_opening(moves_played, opening_move);
 
@@ -985,7 +986,7 @@ void game(struct Piece board[ROW][COL]) {
 
 					continue;
 				}
-			}*/
+			}
 			
 			struct Move best_move;
 
@@ -1001,7 +1002,7 @@ void game(struct Piece board[ROW][COL]) {
 			change_turn();
 
 			continue;
-		}
+		}*/
 
 		print_board(board);
 
